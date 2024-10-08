@@ -13,9 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { UserPlus, BookOpen, Settings, AlertCircle, BarChart2, Users, Database } from 'lucide-react'
 import { Bar, BarChart, Line, LineChart, XAxis, YAxis, CartesianGrid,  Legend, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import withAuth from '@/lib/withAuth'
 
- function AdminDashboard() {  // Mock data
+export default function AdminDashboard() {  // Mock data
 
 
   const userRoles = ['Student', 'Lecturer', 'Admin']
@@ -379,5 +378,4 @@ import withAuth from '@/lib/withAuth'
   )
 }
 
-export default withAuth(AdminDashboard, ['admin']);
 
