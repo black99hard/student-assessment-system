@@ -2,8 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
 
-// Define your authentication options
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -15,7 +14,7 @@ const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         const username = credentials?.username;
         const password = credentials?.password;
-        const role = credentials?.role?.toLowerCase() || 'student'; // Default to 'student' if role is missing
+        const role = credentials?.role?.toLowerCase() || 'student';
 
         // Dummy logic for authentication (replace with real logic)
         if (username && password) {
@@ -23,11 +22,11 @@ const authOptions: NextAuthOptions = {
             id: "1",
             name: "SALAHUDEEN RIDWAN",
             email: "SALAHUDEEN RIDWAN@example.com",
-            role: role, // Ensure role is always a string
+            role: role,
           };
-          return user; // Return the user object if authentication succeeds
+          return user;
         }
-        return null; // Return null if authentication fails
+        return null;
       },
     }),
   ],
@@ -39,22 +38,18 @@ const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.role) {
+      if (session.user) {
         session.user.role = token.role as string;
       }
       return session;
     },
   },
   pages: {
-    signIn: '/login', // Custom login page
+    signIn: '/login',
   },
-  session: {
-    strategy: "jwt", // Use JWT for session management
-  },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
-// Create the handler for NextAuth
 const handler = NextAuth(authOptions);
 
-// Export the handler for both GET and POST methods
 export { handler as GET, handler as POST };
