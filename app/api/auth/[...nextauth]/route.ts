@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -21,7 +21,7 @@ export const authOptions: NextAuthOptions = {
           const user = {
             id: "1",
             name: "SALAHUDEEN RIDWAN",
-            email: "SALAHUDEEN RIDWAN@example.com",
+            email: "SALAHUDEEN.RIDWAN@example.com",
             role: role,
           };
           return user;
