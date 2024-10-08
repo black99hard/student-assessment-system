@@ -24,4 +24,4 @@ const  StudentLayout: React.FC< StudentLayoutProps> = ({ children }) => {
 };
 
 // Ensure that withAuth is correctly typed
-export default withAuth( StudentLayout, ['student']) as React.FC< StudentLayoutProps & WithAuthProps>; // Add type assertion here
+export default withAuth(StudentLayout, ['student']) as React.FC<StudentLayoutProps & WithAuthProps>; // Add type assertion here

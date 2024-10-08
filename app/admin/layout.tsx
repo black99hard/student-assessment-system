@@ -4,13 +4,13 @@ import React from 'react';
 import withAuth from '@/lib/withAuth';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
-import type { WithAuthProps } from '@/lib/withAuth'; // Import the type correctly
+import WithAuthProps from '@/lib/withAuth'; // Import the WithAuthProps type as default
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-// Define the component
+// Update the type of the wrapped component to include WithAuthProps
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen">
@@ -23,5 +23,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   );
 };
 
-// Correctly apply the HOC with type assertion
-export default withAuth(AdminLayout, ['admin']) as React.FC<AdminLayoutProps & WithAuthProps>;
+// Ensure that withAuth is correctly typed
+const AuthenticatedAdminLayout = withAuth(AdminLayout, ['admin']); // Apply HOC without type assertion
+
+export default AuthenticatedAdminLayout as React.FC<AdminLayoutProps & WithAuthProps>; // Add type assertion here
