@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { BookOpen, Calendar as CalendarIcon, FileText, GraduationCap } from 'lucide-react';
 import withAuth from '@/lib/withAuth';
 
-function StudentDashboard() {
+export default function StudentDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date());
 
   // Mock data - in a real application, this would come from an API
@@ -305,4 +305,3 @@ function StudentDashboard() {
   );
 }
 
-export default withAuth(StudentDashboard, ['student']);

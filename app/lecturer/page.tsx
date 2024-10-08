@@ -16,7 +16,7 @@ import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import withAuth from '@/lib/withAuth'
 
-function LecturerDashboard() {
+export default function LecturerDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date())
 
   // Mock data
@@ -344,4 +344,3 @@ function LecturerDashboard() {
   )
 }
 
-export default withAuth(LecturerDashboard, ['lecturer'])
