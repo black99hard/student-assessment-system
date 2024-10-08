@@ -4,7 +4,7 @@ import React from 'react';
 import withAuth from '@/lib/withAuth';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
-import WithAuthProps  from '@/lib/withAuth'; // Import the WithAuthProps type
+import type { WithAuthProps } from '@/lib/withAuth'; // Import the type correctly
 
 interface  StudentLayoutProps {
   children: React.ReactNode;
@@ -24,4 +24,4 @@ const  StudentLayout: React.FC< StudentLayoutProps> = ({ children }) => {
 };
 
 // Ensure that withAuth is correctly typed
-export default withAuth( StudentLayout, [' student']) as React.FC< StudentLayoutProps & WithAuthProps>; // Add type assertion here
+export default withAuth( StudentLayout, ['student']) as React.FC< StudentLayoutProps & WithAuthProps>; // Add type assertion here

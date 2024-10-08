@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react'; // Use NextAuth's session
 
 // Extend the WithAuthProps to include the wrapped component's props
-interface WithAuthProps {
+export interface WithAuthProps {
   allowedRoles: string[];
   children?: React.ReactNode;
 }
