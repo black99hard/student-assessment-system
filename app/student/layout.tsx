@@ -4,7 +4,7 @@ import React from 'react';
 import withAuth from '@/lib/withAuth';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
-import { WithAuthProps } from '@/lib/withAuth'; // Import the WithAuthProps type
+import WithAuthProps  from '@/lib/withAuth'; // Import the WithAuthProps type
 
 interface  StudentLayoutProps {
   children: React.ReactNode;
