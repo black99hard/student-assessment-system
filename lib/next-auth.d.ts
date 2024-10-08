@@ -1,18 +1,22 @@
-// types/next-auth.d.ts
+import NextAuth from "next-auth"
 
-import NextAuth from "next-auth";
-
-// Extend the User type to include the role property
 declare module "next-auth" {
-  interface User {
-    role: string; // Add role to User type
-  }
-
   interface Session {
-    user: User; // Ensure session has the User type
+    user: {
+      id: string
+      name: string
+      email: string
+      role: string
+    }
   }
 
+  interface User {
+    role?: string
+  }
+}
+
+declare module "next-auth/jwt" {
   interface JWT {
-    role: string; // Add role to JWT type
+    role?: string
   }
 }
