@@ -21,4 +21,5 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   );
 };
 
-export default withAuth(AdminLayout, ['admin']); // Ensure withAuth is typed correctly
+// Ensure that withAuth is correctly typed
+export default withAuth(AdminLayout, ['admin']);
