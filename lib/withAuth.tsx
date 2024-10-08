@@ -4,13 +4,18 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react'; // Use NextAuth's session
 
-interface WithAuthProps {
+// Use a generic type for WrappedComponent to capture its props
+interface WithAuthProps<T> {
   allowedRoles: string[];
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  // Extend props to include the wrapped component's props
 }
 
-const withAuth = (WrappedComponent: React.ComponentType<any>, allowedRoles: string[]) => {
-  return function ProtectedRoute(props: WithAuthProps) {
+const withAuth = <P extends object>(
+  WrappedComponent: React.ComponentType<P>,
+  allowedRoles: string[]
+) => {
+  return function ProtectedRoute(props: P & WithAuthProps<P>) {
     const { data: session, status } = useSession(); // Get session data from NextAuth
     const router = useRouter();
 
@@ -34,7 +39,7 @@ const withAuth = (WrappedComponent: React.ComponentType<any>, allowedRoles: stri
     }
 
     // If role is authorized, render the wrapped component
-    return <WrappedComponent {...props} />;
+    return <WrappedComponent {...(props as P)} />;
   };
 };
 
