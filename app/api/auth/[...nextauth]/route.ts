@@ -1,6 +1,11 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import type { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions, User } from "next-auth";
+
+// Extend the User type to include the role property
+interface CustomUser extends User {
+  role?: string; // Make role optional
+}
 
 // Define your authentication options
 const authOptions: NextAuthOptions = {
@@ -19,7 +24,7 @@ const authOptions: NextAuthOptions = {
 
         // Dummy logic for authentication (replace with real logic)
         if (username && password) {
-          const user = {
+          const user: CustomUser = {
             id: "1",
             name: "SALAHUDEEN RIDWAN",
             email: "SALAHUDEEN RIDWAN@example.com",
@@ -34,7 +39,7 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role; // Attach role to token
+        token.role = (user as CustomUser).role; // Attach role to token
       }
       return token;
     },
