@@ -22,8 +22,8 @@ export const authOptions: NextAuthOptions = {
         if (username && password ) {
           const user = {
             id: "1",
-            name: "J Smith",
-            email: "jsmith@example.com",
+            name: "SALAHUDEEN RIDWAN ",
+            email: "SALAHUDEEN RIDWAN@example.com",
             role: role?.toLowerCase(), // Default to 'student' if role is not provided
           };
           return user; // Return user object on successful authentication

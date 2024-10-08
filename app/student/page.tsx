@@ -18,8 +18,8 @@ function StudentDashboard() {
 
   // Mock data - in a real application, this would come from an API
   const student = {
-    name: "Alex Johnson",
-    id: "STU001",
+    name: "SALAHUDEEN RIDWAN",
+    id: "BASUG/UG/SCI/CSC/20/10474",
     course: "Computer Science"
   };
 
