@@ -1,73 +1,51 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { GraduationCap, UserCircle, ShieldCheck } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { useState, useEffect } from 'react'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { GraduationCap, UserCircle, ShieldCheck } from 'lucide-react'
+import { motion } from 'framer-motion'
 
-type Role = 'Student' | 'Lecturer' | 'Admin';
+type Role = 'Student' | 'Lecturer' | 'Admin'
 
 const roles: { name: Role; icon: React.ElementType }[] = [
   { name: 'Student', icon: GraduationCap },
   { name: 'Lecturer', icon: UserCircle },
   { name: 'Admin', icon: ShieldCheck },
-];
+]
 
 export default function LoginPage() {
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const router = useRouter();
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   useEffect(() => {
-    const storedRole = localStorage.getItem('userRole') as Role | null;
+    const storedRole = localStorage.getItem('userRole') as Role | null
     if (storedRole) {
-      setSelectedRole(storedRole);
+      setSelectedRole(storedRole)
     }
-  }, []);
+  }, [])
 
   const handleRoleSelection = (role: Role) => {
-    setSelectedRole(role);
-    setIsDialogOpen(true);
-  };
-
- const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  const formData = new FormData(e.currentTarget);
-  const username = formData.get('username') as string;
-  const password = formData.get('password') as string;
-  const result = await signIn('credentials', {
-    username,
-    password,
-    role: selectedRole, // Make sure this is passed correctly
-    redirect: false,
-  });
-
-  if (result.error) {
-    console.error(result.error); // Log the error for debugging
-  } else {
-    // Redirect based on user role
-    switch (selectedRole) { // Use selectedRole instead of username
-      case 'Student':
-        router.push('/student/');
-        break;
-      case 'Lecturer':
-        router.push('/lecturer/');
-        break;
-      case 'Admin':
-        router.push('/admin/');
-        break;
-      default:
-        router.push('/');
-    }
+    setSelectedRole(role)
+    setIsDialogOpen(true)
   }
-};
 
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const username = formData.get('username') as string
+    const password = formData.get('password') as string
+
+    // Here you would typically handle the login logic
+    console.log(`Logging in as ${selectedRole} with username: ${username}`)
+
+    localStorage.setItem('userRole', selectedRole!)
+    setIsDialogOpen(false)
+    // Redirect to appropriate dashboard here
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -116,5 +94,5 @@ export default function LoginPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

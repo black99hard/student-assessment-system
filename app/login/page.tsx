@@ -36,38 +36,41 @@ export default function LoginPage() {
     setIsDialogOpen(true);
   };
 
- const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  const formData = new FormData(e.currentTarget);
-  const username = formData.get('username') as string;
-  const password = formData.get('password') as string;
-  const result = await signIn('credentials', {
-    username,
-    password,
-    role: selectedRole, // Make sure this is passed correctly
-    redirect: false,
-  });
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const username = formData.get('username') as string;
+    const password = formData.get('password') as string;
 
-  if (result.error) {
-    console.error(result.error); // Log the error for debugging
-  } else {
-    // Redirect based on user role
-    switch (selectedRole) { // Use selectedRole instead of username
-      case 'Student':
-        router.push('/student/');
-        break;
-      case 'Lecturer':
-        router.push('/lecturer/');
-        break;
-      case 'Admin':
-        router.push('/admin/');
-        break;
-      default:
-        router.push('/');
+    const result = await signIn('credentials', {
+      username,
+      password,
+      role: selectedRole, // Pass the selected role here
+      redirect: false,
+    });
+
+    if (result.error) {
+      console.error(result.error);
+    } else {
+      // Store the selected role in localStorage
+      localStorage.setItem('userRole', selectedRole as string); // Ensure selectedRole is not null
+      
+      // Redirect based on user role
+      switch (selectedRole) { // Use selectedRole instead of username
+        case 'Student':
+          router.push('/student/');
+          break;
+        case 'Lecturer':
+          router.push('/lecturer/');
+          break;
+        case 'Admin':
+          router.push('/admin/');
+          break;
+        default:
+          router.push('/');
+      }
     }
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
