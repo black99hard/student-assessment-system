@@ -1,17 +1,40 @@
 'use client';
 
-import React from 'react';
-import withAuth from '@/lib/withAuth';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
-import type { WithAuthProps } from '@/lib/withAuth'; // Import the type correctly
 
 interface LecturerLayoutProps {
   children: React.ReactNode;
 }
 
-// Update the type of the wrapped component to include WithAuthProps
 const LecturerLayout: React.FC<LecturerLayoutProps> = ({ children }) => {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Wait for session to load
+    if (status === 'loading') return;
+
+    // Redirect to login if no session exists
+    if (!session) {
+      router.push('/login');
+    }
+
+    // Redirect if role is not lecturer
+    if (session?.user?.role !== 'lecturer') {
+      router.push('/unauthorized');
+    }
+  }, [session, status, router]);
+
+  // Display nothing while loading or unauthorized access
+  if (status === 'loading' || !session || session.user.role !== 'lecturer') {
+    return null; // Optionally, render a loading spinner
+  }
+
+  // Render the layout for authorized lecturer users
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -23,5 +46,4 @@ const LecturerLayout: React.FC<LecturerLayoutProps> = ({ children }) => {
   );
 };
 
-// Ensure that withAuth is correctly typed
-export default withAuth(LecturerLayout, ['lecturer']) as React.FC<LecturerLayoutProps & WithAuthProps>; // Add type assertion here
+export default LecturerLayout;
