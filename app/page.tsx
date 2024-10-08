@@ -22,6 +22,7 @@ const roles: { name: Role; icon: React.ElementType }[] = [
 export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -36,38 +37,52 @@ export default function LoginPage() {
     setIsDialogOpen(true);
   };
 
- const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  const formData = new FormData(e.currentTarget);
-  const username = formData.get('username') as string;
-  const password = formData.get('password') as string;
-  const result = await signIn('credentials', {
-    username,
-    password,
-    role: selectedRole, // Make sure this is passed correctly
-    redirect: false,
-  });
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    const formData = new FormData(e.currentTarget);
+    const username = formData.get('username') as string;
+    const password = formData.get('password') as string;
 
-  if (result.error) {
-    console.error(result.error); // Log the error for debugging
-  } else {
-    // Redirect based on user role
-    switch (selectedRole) { // Use selectedRole instead of username
-      case 'Student':
-        router.push('/student/');
-        break;
-      case 'Lecturer':
-        router.push('/lecturer/');
-        break;
-      case 'Admin':
-        router.push('/admin/');
-        break;
-      default:
-        router.push('/');
+    if (!selectedRole) {
+      setError('Please select a role before logging in.');
+      return;
     }
-  }
-};
 
+    try {
+      const result = await signIn('credentials', {
+        username,
+        password,
+        role: selectedRole,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+        console.error(result.error);
+      } else if (result?.ok) {
+        // Redirect based on user role
+        switch (selectedRole) {
+          case 'Student':
+            router.push('/student/');
+            break;
+          case 'Lecturer':
+            router.push('/lecturer/');
+            break;
+          case 'Admin':
+            router.push('/admin/');
+            break;
+          default:
+            router.push('/');
+        }
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('An unexpected error occurred. Please try again.');
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -111,6 +126,7 @@ export default function LoginPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" name="password" type="password" required />
             </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
             <Button type="submit" className="w-full">Login</Button>
           </form>
         </DialogContent>
