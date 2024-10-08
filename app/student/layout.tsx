@@ -15,7 +15,6 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
   const router = useRouter();
 
   useEffect(() => {
-    // Wait for session to load
     if (status === 'loading') return;
 
     // Redirect to login if no session exists
@@ -29,12 +28,10 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
     }
   }, [session, status, router]);
 
-  // Display nothing while loading or unauthorized access
   if (status === 'loading' || !session || session.user.role !== 'student') {
     return null; // Optionally, render a loading spinner
   }
 
-  // Render the layout for authorized student users
   return (
     <div className="flex flex-col min-h-screen">
       <Header />

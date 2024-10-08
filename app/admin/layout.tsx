@@ -15,26 +15,23 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const router = useRouter();
 
   useEffect(() => {
-    // If the session is still loading, wait for it to resolve
     if (status === 'loading') return;
 
-    // If no session exists (user not authenticated), redirect to login
+    // Redirect to login if no session exists
     if (!session) {
       router.push('/login');
     }
 
-    // Check if user's role is allowed (only admins should access this layout)
+    // Redirect if role is not admin
     if (session?.user?.role !== 'admin') {
-      router.push('/unauthorized'); // Redirect if role is not allowed
+      router.push('/unauthorized');
     }
   }, [session, status, router]);
 
-  // Show nothing or a loading spinner while authentication is loading
   if (status === 'loading' || !session || session.user.role !== 'admin') {
-    return null; // Optionally, render a loading spinner here
+    return null; // Optionally, render a loading spinner
   }
 
-  // If authenticated and the role is admin, render the layout
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
