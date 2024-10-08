@@ -1,11 +1,15 @@
 'use client';
 
-
+import React from 'react';
 import withAuth from '@/lib/withAuth';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 
-const StudentLayout = ({ children }) => {
+interface StudentLayoutProps {
+  children: React.ReactNode;
+}
+
+const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />

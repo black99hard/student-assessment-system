@@ -1,11 +1,14 @@
-
 'use client';
 
 import withAuth from '@/lib/withAuth';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 
-const LecturerLayout = ({ children }) => {
+interface LecturerLayoutProps {
+  children: React.ReactNode;
+}
+
+const LecturerLayout: React.FC<LecturerLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
