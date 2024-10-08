@@ -1,19 +1,21 @@
 'use client'; // Ensures this file runs on the client-side
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react'; // Use NextAuth's session
 
 // Use a generic type for WrappedComponent to capture its props
-interface WithAuthProps {
+interface WithAuthProps<T> {
   allowedRoles: string[];
+  children?: React.ReactNode;
+  // Extend props to include the wrapped component's props
 }
 
 const withAuth = <P extends object>(
   WrappedComponent: React.ComponentType<P>,
   allowedRoles: string[]
 ) => {
-  const AuthenticatedComponent: React.FC<P & WithAuthProps> = (props) => {
+  return function ProtectedRoute(props: P & WithAuthProps<P>) {
     const { data: session, status } = useSession(); // Get session data from NextAuth
     const router = useRouter();
 
@@ -39,8 +41,6 @@ const withAuth = <P extends object>(
     // If role is authorized, render the wrapped component
     return <WrappedComponent {...(props as P)} />;
   };
-
-  return AuthenticatedComponent;
 };
 
 export default withAuth;
