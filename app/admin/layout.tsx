@@ -9,6 +9,7 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
+// Update the type of the wrapped component to include WithAuthProps
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen">
@@ -22,4 +23,4 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 };
 
 // Ensure that withAuth is correctly typed
-export default withAuth(AdminLayout, ['admin']);
+export default withAuth(AdminLayout, ['admin']) as React.FC<AdminLayoutProps & WithAuthProps>; // Add type assertion here
