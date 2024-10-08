@@ -1,4 +1,4 @@
-// src/app/lecturer/layout.tsx
+
 'use client';
 
 import withAuth from '@/lib/withAuth';

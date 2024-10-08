@@ -1,5 +1,4 @@
-// RootLayout.tsx
-'use client'; // Mark this file as a client component
+'use client';
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";

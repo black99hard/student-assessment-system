@@ -45,15 +45,15 @@ export default function LoginPage() {
     const result = await signIn('credentials', {
       username,
       password,
-      role: selectedRole, // Pass the selected role here
+      role: selectedRole, 
       redirect: false,
     });
 
     if (result.error) {
       console.error(result.error);
     } else {
-      // Store the selected role in localStorage
-      localStorage.setItem('userRole', selectedRole as string); // Ensure selectedRole is not null
+    
+      localStorage.setItem('userRole', selectedRole as string); 
       
       // Redirect based on user role
       switch (selectedRole) { // Use selectedRole instead of username

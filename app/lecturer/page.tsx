@@ -7,7 +7,6 @@ import { Calendar } from "@/components/ui/calendar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -161,9 +160,9 @@ function LecturerDashboard() {
                 color: "hsl(var(--chart-3))",
               },
             }}
-            className="h-[300px] sm:h-[400px]" // Adjust height for larger screens
+            className="h-[300px] sm:h-[400px]"
           >
-            <ResponsiveContainer width="100%" height="100%"> // Set height to 100% to fill the container
+            <ResponsiveContainer width="100%" height="100%"> 
               <LineChart data={performanceData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
