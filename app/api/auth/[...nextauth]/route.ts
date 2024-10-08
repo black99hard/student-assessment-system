@@ -1,6 +1,11 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import type { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions, User } from "next-auth";
+
+// Extend the User type to include the role property
+interface CustomUser extends User {
+  role: string; // Make role a required string
+}
 
 // Define your authentication options
 const authOptions: NextAuthOptions = {
@@ -15,15 +20,15 @@ const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         const username = credentials?.username;
         const password = credentials?.password;
+        const role = credentials?.role?.toLowerCase() || ""; // Ensure role is a string
 
         // Dummy logic for authentication (replace with real logic)
         if (username && password) {
-          const user = {
+          const user: CustomUser = {
             id: "1",
             name: "SALAHUDEEN RIDWAN",
             email: "SALAHUDEEN RIDWAN@example.com",
-            // role can be a string or undefined
-            role: credentials?.role?.toLowerCase() || null, // Role from credentials
+            role: role, // Role is now guaranteed to be a string
           };
           return user; // Return the user object if authentication succeeds
         }
