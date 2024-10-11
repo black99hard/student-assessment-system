@@ -1014,7 +1014,7 @@ export default function LecturerDashboard() {
   }
 
   const openStudentModal = (studentId: string) => {
-    const student = studentDetails[studentId];
+    const student = studentDetails[studentId as keyof typeof studentDetails];
     if (student && student.semesters && student.semesters.length > 0) {
       setSelectedStudent(student);
       setSelectedSemester(student.semesters[0].name);
