@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
@@ -13,14 +13,21 @@ import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { BookOpen, Calendar as CalendarIcon, FileText, Users, PlusCircle, Clock, Bell } from 'lucide-react'
-import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { BookOpen, Calendar as CalendarIcon, FileText, Users, PlusCircle, Clock, Bell, UserPlus, BarChart2, Settings } from 'lucide-react'
+import { LineChart } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { toast } from "@/hooks/use-toast"
+import withAuth from '@/lib/withAuth'
+import { TrendingUp } from 'lucide-react'
 
-export default function LecturerDashboard() {
+
+
+export default  function LecturerDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date())
-  const [selectedCourse, setSelectedCourse] = useState('CS301')
+  const [selectedCourses, setSelectedCourses] = useState(['CS301', 'CS205'])
+  const [selectedStudent, setSelectedStudent] = useState<any>(null)
+  const [selectedSemester, setSelectedSemester] = useState<string | null>(null)
 
   // Mock data
   const lecturer = {
@@ -30,225 +37,903 @@ export default function LecturerDashboard() {
   }
 
   const upcomingClasses = [
-    { id: 1, title: "Artificial Intelligence", time: "1:00 PM - 2:30 PM", room: "CS-401" },
-    { id: 2, title: "Algorithms", time: "2:00 PM - 3:30 PM", room: "CS-201" },
-    { id: 3, title: "Cloud Computing", time: "9:00 AM - 10:30 AM", room: "CS-301" },
-    { id: 4, title: "Machine Learning", time: "8:00 AM - 9:30 AM", room: "CS-301" },
-    { id: 5, title: "Algorithms", time: "4:00 PM - 5:30 PM", room: "CS-401" },
-    { id: 6, title: "Software Engineering", time: "9:00 AM - 10:30 AM", room: "CS-301" },
-    { id: 7, title: "Cybersecurity", time: "1:00 PM - 2:30 PM", room: "CS-202" },
-    { id: 8, title: "Computer Networks", time: "1:00 PM - 2:30 PM", room: "CS-201" },
-    { id: 9, title: "Computer Networks", time: "11:00 AM - 12:30 PM", room: "CS-101" },
-    { id: 10, title: "Algorithms", time: "2:00 PM - 3:30 PM", room: "CS-102" },
-    { id: 11, title: "Cloud Computing", time: "3:00 PM - 4:30 PM", room: "CS-201" },
-    { id: 12, title: "Algorithms", time: "9:00 AM - 10:30 AM", room: "CS-301" },
-    { id: 13, title: "Database Systems", time: "10:00 AM - 11:30 AM", room: "CS-201" },
-    { id: 14, title: "Operating Systems", time: "1:00 PM - 2:30 PM", room: "CS-402" },
-    { id: 15, title: "Artificial Intelligence", time: "3:00 PM - 4:30 PM", room: "CS-201" },
-    { id: 16, title: "Software Engineering", time: "9:00 AM - 10:30 AM", room: "CS-301" },
-    { id: 17, title: "Mobile App Development", time: "2:00 PM - 3:30 PM", room: "CS-201" },
-    { id: 18, title: "Machine Learning", time: "8:00 AM - 9:30 AM", room: "CS-101" },
-    { id: 19, title: "Cloud Computing", time: "10:00 AM - 11:30 AM", room: "CS-402" },
-    { id: 20, title: "Operating Systems", time: "1:00 PM - 2:30 PM", room: "CS-202" },
-    { id: 21, title: "Mobile App Development", time: "8:00 AM - 9:30 AM", room: "CS-302" },
-    { id: 22, title: "Artificial Intelligence", time: "4:00 PM - 5:30 PM", room: "CS-201" },
-    { id: 23, title: "Computer Networks", time: "4:00 PM - 5:30 PM", room: "CS-202" },
-    { id: 24, title: "Mobile App Development", time: "11:00 AM - 12:30 PM", room: "CS-401" },
-    { id: 25, title: "Information Retrieval", time: "9:00 AM - 10:30 AM", room: "CS-102" },
-    { id: 26, title: "Database Systems", time: "3:00 PM - 4:30 PM", room: "CS-101" },
-    { id: 27, title: "Cloud Computing", time: "11:00 AM - 12:30 PM", room: "CS-401" },
-    { id: 28, title: "Information Retrieval", time: "9:00 AM - 10:30 AM", room: "CS-202" },
-    { id: 29, title: "Machine Learning", time: "11:00 AM - 12:30 PM", room: "CS-301" },
-    { id: 30, title: "Cybersecurity", time: "9:00 AM - 10:30 AM", room: "CS-301" }
+    { id: 1, title: "Database Systems", time: "10:00 AM - 11:30 AM", room: "CS-101" },
+    { id: 2, title: "Web Development", time: "2:00 PM - 3:30 PM", room: "CS-201" },
+    { id: 3, title: "Algorithms", time: "4:00 PM - 5:30 PM", room: "CS-301" },
+    { id: 4, title: "Machine Learning", time: "9:00 AM - 10:30 AM", room: "CS-401" },
+    { id: 5, title: "Computer Networks", time: "11:00 AM - 12:30 PM", room: "CS-202" },
+    { id: 6, title: "Software Engineering", time: "1:00 PM - 2:30 PM", room: "CS-302" },
+    { id: 7, title: "Artificial Intelligence", time: "3:00 PM - 4:30 PM", room: "CS-402" },
+    { id: 8, title: "Data Structures", time: "9:30 AM - 11:00 AM", room: "CS-103" },
+    { id: 9, title: "Operating Systems", time: "12:00 PM - 1:30 PM", room: "CS-203" },
+    { id: 10, title: "Computer Graphics", time: "2:30 PM - 4:00 PM", room: "CS-303" },
+    { id: 11, title: "Cybersecurity", time: "10:30 AM - 12:00 PM", room: "CS-403" },
+    { id: 12, title: "Mobile App Development", time: "1:30 PM - 3:00 PM", room: "CS-104" },
+    { id: 13, title: "Cloud Computing", time: "3:30 PM - 5:00 PM", room: "CS-204" },
+    { id: 14, title: "Big Data Analytics", time: "9:00 AM - 10:30 AM", room: "CS-304" },
+    { id: 15, title: "Internet of Things", time: "11:30 AM - 1:00 PM", room: "CS-404" }
   ];
   
-
   const coursesTaught = [
-    { id: "CS101", name: "Introduction to Programming", students: 50 },
-    { id: "CS102", name: "Data Structures", students: 40 },
-    { id: "CS103", name: "Web Development", students: 60 },
-    { id: "CS201", name: "Computer Networks", students: 55 },
-    { id: "CS202", name: "Operating Systems", students: 48 },
-    { id: "CS205", name: "Software Engineering", students: 42 },
     { id: "CS301", name: "Database Systems", students: 45 },
-    { id: "CS302", name: "Mobile App Development", students: 38 },
-    { id: "CS303", name: "Cloud Computing", students: 30 },
+    { id: "CS205", name: "Web Development", students: 60 },
     { id: "CS401", name: "Algorithms", students: 35 },
-    { id: "CS402", name: "Machine Learning", students: 28 },
-    { id: "CS403", name: "Artificial Intelligence", students: 25 },
-    { id: "CS404", name: "Human-Computer Interaction", students: 32 },
-    { id: "CS405", name: "Data Science", students: 37 },
-    { id: "CS406", name: "Information Retrieval", students: 29 },
-    { id: "CS407", name: "Cybersecurity", students: 60 },
-    { id: "CS408", name: "Game Development", students: 33 },
-    { id: "CS409", name: "Big Data", students: 24 },
-    { id: "CS410", name: "Blockchain Technology", students: 22 },
-    { id: "CS411", name: "Robotics", students: 26 },
-    { id: "CS412", name: "Network Security", students: 31 },
-    { id: "CS413", name: "Embedded Systems", students: 20 },
-    { id: "CS414", name: "Computer Graphics", students: 27 },
-    { id: "CS415", name: "Digital Forensics", students: 18 },
-    { id: "CS416", name: "Data Visualization", students: 25 },
-    { id: "CS417", name: "Ethical Hacking", students: 19 },
-    { id: "CS418", name: "Natural Language Processing", students: 15 },
-    { id: "CS419", name: "Augmented Reality", students: 21 },
-    { id: "CS420", name: "Software Testing", students: 44 },
-    { id: "CS421", name: "Advanced Web Development", students: 43 },
-    { id: "CS422", name: "Information Systems", students: 39 },
-    { id: "CS423", name: "System Analysis", students: 46 },
-    { id: "CS424", name: "Wireless Communication", students: 34 },
-    { id: "CS425", name: "Parallel Computing", students: 23 },
-    { id: "CS426", name: "Digital Image Processing", students: 30 },
+    { id: "CS501", name: "Machine Learning", students: 40 },
+    { id: "CS302", name: "Computer Networks", students: 55 },
+    { id: "CS402", name: "Software Engineering", students: 50 },
+    { id: "CS502", name: "Artificial Intelligence", students: 38 },
+    { id: "CS303", name: "Data Structures", students: 65 },
+    { id: "CS403", name: "Operating Systems", students: 42 },
+    { id: "CS503", name: "Computer Graphics", students: 30 },
+    { id: "CS304", name: "Cybersecurity", students: 48 },
+    { id: "CS404", name: "Mobile App Development", students: 58 },
+    { id: "CS504", name: "Cloud Computing", students: 36 },
+    { id: "CS305", name: "Big Data Analytics", students: 44 },
+    { id: "CS405", name: "Internet of Things", students: 32 }
   ];
   
   const recentAssignments = [
-    { id: 1, title: "Introduction to Programming Assignment", course: "CS101", submitted: 45, total: 50 },
-    { id: 2, title: "Data Structures Project", course: "CS102", submitted: 40, total: 45 },
-    { id: 3, title: "Web Development Quiz", course: "CS103", submitted: 55, total: 60 },
-    { id: 4, title: "Computer Networks Lab Report", course: "CS201", submitted: 30, total: 35 },
-    { id: 5, title: "Operating Systems Project", course: "CS202", submitted: 38, total: 40 },
-    { id: 6, title: "Software Engineering Group Project", course: "CS205", submitted: 42, total: 48 },
-    { id: 7, title: "Database Systems Midterm Exam", course: "CS301", submitted: 45, total: 50 },
-    { id: 8, title: "Mobile App Development Proposal", course: "CS302", submitted: 25, total: 30 },
-    { id: 9, title: "Cloud Computing Presentation", course: "CS303", submitted: 20, total: 25 },
-    { id: 10, title: "Algorithms Research Paper", course: "CS401", submitted: 28, total: 35 },
-    { id: 11, title: "Machine Learning Case Study", course: "CS402", submitted: 22, total: 30 },
-    { id: 12, title: "Artificial Intelligence Assignment", course: "CS403", submitted: 27, total: 30 },
-    { id: 13, title: "Human-Computer Interaction Survey", course: "CS404", submitted: 33, total: 35 },
-    { id: 14, title: "Data Science Project Report", course: "CS405", submitted: 38, total: 40 },
-    { id: 15, title: "Information Retrieval Quiz", course: "CS406", submitted: 30, total: 35 },
-    { id: 16, title: "Cybersecurity Assessment", course: "CS407", submitted: 29, total: 35 },
-    { id: 17, title: "Game Development Assignment", course: "CS408", submitted: 18, total: 20 },
-    { id: 18, title: "Big Data Analysis Project", course: "CS409", submitted: 24, total: 30 },
-    { id: 19, title: "Blockchain Technology Report", course: "CS410", submitted: 20, total: 25 },
-    { id: 20, title: "Robotics Project Presentation", course: "CS411", submitted: 15, total: 20 },
-    { id: 21, title: "Network Security Assessment", course: "CS412", submitted: 34, total: 40 },
-    { id: 22, title: "Embedded Systems Lab Work", course: "CS413", submitted: 28, total: 30 },
-    { id: 23, title: "Computer Graphics Assignment", course: "CS414", submitted: 19, total: 25 },
-    { id: 24, title: "Digital Forensics Case Analysis", course: "CS415", submitted: 17, total: 20 },
-    { id: 25, title: "Data Visualization Project", course: "CS416", submitted: 30, total: 35 },
-    { id: 26, title: "Ethical Hacking Report", course: "CS417", submitted: 20, total: 25 },
-    { id: 27, title: "Natural Language Processing Assignment", course: "CS418", submitted: 10, total: 15 },
-    { id: 28, title: "Augmented Reality Project", course: "CS419", submitted: 15, total: 20 },
-    { id: 29, title: "Software Testing Report", course: "CS420", submitted: 28, total: 30 },
-    { id: 30, title: "Advanced Web Development Project", course: "CS421", submitted: 40, total: 45 },
+    { id: 1, title: "Database Design Project", course: "CS301", submitted: 40, total: 45 },
+    { id: 2, title: "JavaScript Basics Quiz", course: "CS205", submitted: 58, total: 60 },
+    { id: 3, title: "Algorithm Complexity Analysis", course: "CS401", submitted: 30, total: 35 },
+    { id: 4, title: "Neural Network Implementation", course: "CS501", submitted: 35, total: 40 },
+    { id: 5, title: "Network Protocol Simulation", course: "CS302", submitted: 50, total: 55 },
+    { id: 6, title: "Agile Development Case Study", course: "CS402", submitted: 48, total: 50 },
+    { id: 7, title: "Expert System Design", course: "CS502", submitted: 36, total: 38 },
+    { id: 8, title: "Binary Tree Operations", course: "CS303", submitted: 62, total: 65 },
+    { id: 9, title: "Process Scheduling Algorithm", course: "CS403", submitted: 40, total: 42 },
+    { id: 10, title: "3D Rendering Techniques", course: "CS503", submitted: 28, total: 30 },
+    { id: 11, title: "Encryption Methods Comparison", course: "CS304", submitted: 45, total: 48 },
+    { id: 12, title: "Cross-Platform App Development", course: "CS404", submitted: 55, total: 58 },
+    { id: 13, title: "Distributed Computing Essay", course: "CS504", submitted: 34, total: 36 },
+    { id: 14, title: "Data Visualization Project", course: "CS305", submitted: 42, total: 44 },
+    { id: 15, title: "Smart Home System Prototype", course: "CS405", submitted: 30, total: 32 }
   ];
   
-  // Updated mock data for student information
+  
+  
+  const courseDetails = [
+    { courseCode: "CS301", courseTitle: "Database Systems", unit: 4 },
+    { courseCode: "CS205", courseTitle: "Web Development", unit: 3 },
+    { courseCode: "CS401", courseTitle: "Algorithms", unit: 4 },
+    { courseCode: "CS501", courseTitle: "Machine Learning", unit: 4 },
+    { courseCode: "CS302", courseTitle: "Computer Networks", unit: 3 },
+    { courseCode: "CS402", courseTitle: "Software Engineering", unit: 4 },
+    { courseCode: "CS502", courseTitle: "Artificial Intelligence", unit: 4 },
+    { courseCode: "CS303", courseTitle: "Data Structures", unit: 3 },
+    { courseCode: "CS403", courseTitle: "Operating Systems", unit: 4 },
+    { courseCode: "CS503", courseTitle: "Computer Graphics", unit: 3 },
+    { courseCode: "CS304", courseTitle: "Cybersecurity", unit: 3 },
+    { courseCode: "CS404", courseTitle: "Mobile App Development", unit: 3 },
+    { courseCode: "CS504", courseTitle: "Cloud Computing", unit: 3 },
+    { courseCode: "CS305", courseTitle: "Big Data Analytics", unit: 4 },
+    { courseCode: "CS405", courseTitle: "Internet of Things", unit: 3 }
+  ];
+  
+  const performanceMetrics = [
+    { studentId: "STU001", courseCode: "CS301", caTest: 20, attendance: 92, exam: 75, total: 95, grade: "A" },
+    { studentId: "STU002", courseCode: "CS205", caTest: 18, attendance: 85, exam: 70, total: 86, grade: "B" },
+    { studentId: "STU003", courseCode: "CS401", caTest: 16, attendance: 60, exam: 45, total: 65, grade: "D" },
+    { studentId: "STU004", courseCode: "CS501", caTest: 22, attendance: 78, exam: 58, total: 80, grade: "B" },
+    { studentId: "STU005", courseCode: "CS302", caTest: 15, attendance: 70, exam: 50, total: 68, grade: "C" },
+    { studentId: "STU006", courseCode: "CS402", caTest: 23, attendance: 95, exam: 72, total: 93, grade: "A" },
+    { studentId: "STU007", courseCode: "CS502", caTest: 19, attendance: 82, exam: 65, total: 83, grade: "B" },
+    { studentId: "STU008", courseCode: "CS303", caTest: 21, attendance: 88, exam: 68, total: 87, grade: "B" },
+    { studentId: "STU009", courseCode: "CS403", caTest: 20, attendance: 86, exam: 62, total: 82, grade: "B" },
+    { studentId: "STU010", courseCode: "CS503", caTest: 17, attendance: 75, exam: 55, total: 72, grade: "C" },
+    { studentId: "STU011", courseCode: "CS304", caTest: 14, attendance: 65, exam: 48, total: 62, grade: "D" },
+    { studentId: "STU012", courseCode: "CS404", caTest: 22, attendance: 90, exam: 73, total: 92, grade: "A" },
+    { studentId: "STU013", courseCode: "CS504", caTest: 16, attendance: 72, exam: 52, total: 70, grade: "C" },
+    { studentId: "STU014", courseCode: "CS305", caTest: 24, attendance: 96, exam: 76, total: 96, grade: "A" },
+    { studentId: "STU015", courseCode: "CS405", caTest: 18, attendance: 80, exam: 60, total: 78, grade: "B" }
+  ];
+  
   const studentInfo = [
     { id: "STU001", name: "Alice Johnson", cgp: 4.0, classification: "First Class" },
     { id: "STU002", name: "Bob Smith", cgp: 3.3, classification: "Second Class Upper" },
     { id: "STU003", name: "Charlie Brown", cgp: 1.0, classification: "Pass" },
     { id: "STU004", name: "Diana Ross", cgp: 3.0, classification: "Second Class Upper" },
     { id: "STU005", name: "Ethan Hunt", cgp: 2.0, classification: "Third Class" },
-    { id: "STU006", name: "Fiona Green", cgp: 3.7, classification: "First Class" },
-    { id: "STU007", name: "George White", cgp: 3.1, classification: "Second Class Upper" },
-    { id: "STU008", name: "Hannah Brown", cgp: 2.5, classification: "Second Class Lower" },
-    { id: "STU009", name: "Ian Black", cgp: 3.8, classification: "First Class" },
-    { id: "STU010", name: "Jackie Blue", cgp: 2.2, classification: "Third Class" },
-    { id: "STU011", name: "Kevin Red", cgp: 3.4, classification: "Second Class Upper" },
-    { id: "STU012", name: "Laura Yellow", cgp: 3.6, classification: "First Class" },
-    { id: "STU013", name: "Michael Orange", cgp: 1.5, classification: "Pass" },
-    { id: "STU014", name: "Nina Pink", cgp: 3.0, classification: "Second Class Upper" },
-    { id: "STU015", name: "Oscar Grey", cgp: 2.8, classification: "Second Class Lower" },
-    { id: "STU016", name: "Paula Violet", cgp: 4.0, classification: "First Class" },
-    { id: "STU017", name: "Quincy Cyan", cgp: 2.3, classification: "Third Class" },
-    { id: "STU018", name: "Rita Indigo", cgp: 3.2, classification: "Second Class Upper" },
-    { id: "STU019", name: "Sam Green", cgp: 3.9, classification: "First Class" },
-    { id: "STU020", name: "Tina Magenta", cgp: 2.1, classification: "Third Class" },
-    { id: "STU021", name: "Ursula Brown", cgp: 3.5, classification: "Second Class Upper" },
-    { id: "STU022", name: "Victor Black", cgp: 1.8, classification: "Pass" },
-    { id: "STU023", name: "Wendy White", cgp: 3.3, classification: "Second Class Upper" },
-    { id: "STU024", name: "Xander Gold", cgp: 3.0, classification: "Second Class Lower" },
-    { id: "STU025", name: "Yara Silver", cgp: 2.6, classification: "Third Class" },
-    { id: "STU026", name: "Zane Bronze", cgp: 4.0, classification: "First Class" },
-    { id: "STU027", name: "Amy Silver", cgp: 3.2, classification: "Second Class Upper" },
-    { id: "STU028", name: "Brian Steel", cgp: 2.7, classification: "Second Class Lower" },
-    { id: "STU029", name: "Clara Pearl", cgp: 1.9, classification: "Pass" },
-    { id: "STU030", name: "David Diamond", cgp: 3.8, classification: "First Class" },
-  ];
+    { id: "STU006", name: "Fiona Gallagher", cgp: 3.8, classification: "First Class" },
+    { id: "STU007", name: "George Wilson", cgp: 2.8, classification: "Second Class Lower" },
+    { id: "STU008", name: "Hannah Montana", cgp: 3.5, classification: "Second Class Upper" },
+    { id: "STU009", name: "Ian McKellen", cgp: 3.2, classification: "Second Class Upper" },
+    { id: "STU010", name: "Julia Roberts", cgp: 2.5, classification: "Second Class Lower" },
+    { id: "STU011", name: "Kevin Hart", cgp: 1.8, classification: "Third Class" },
+      { id: "STU012", name: "Liam Neeson", cgp: 3.7, classification: "First Class" }
+    ];
+
+  
+  const studentDetails = {
+    STU001: {
+      name: "Alice Johnson",
+      currentSemester: "Second Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 3.5,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "A-" },
+            { code: "CS102", name: "Computer Architecture", grade: "B+" },
+            { code: "MATH101", name: "Calculus I", grade: "A" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 3.7,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "A" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "A-" },
+            { code: "MATH102", name: "Linear Algebra", grade: "B+" },
+          ]
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 3.8,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "A" },
+            { code: "CS202", name: "Database Systems", grade: "A" },
+            { code: "CS203", name: "Computer Networks", grade: "A-" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 3.9,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "A" },
+            { code: "CS205", name: "Web Development", grade: "A" },
+            { code: "CS206", name: "Algorithms", grade: "A-" },
+          ]
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 4.0,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "A" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "A" },
+            { code: "CS303", name: "Computer Graphics", grade: "A" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 3",
+          cgp: 4.0,
+          courses: [
+            { code: "CS304", name: "Machine Learning", grade: "A" },
+            { code: "CS305", name: "Cybersecurity", grade: "A" },
+            { code: "CS306", name: "Cloud Computing", grade: "A" },
+          ]
+        },
+      ],
+      cgp: 4.0,
+      attendance: 95,
+      performanceData: [
+        { course: "CS301", score: 95 },
+        { course: "CS302", score: 98 },
+        { course: "CS303", score: 96 },
+        { course: "CS304", score: 94 },
+        { course: "CS305", score: 97 },
+      ],
+    },
+    
+    STU002: {
+      name: "Bob Smith",
+      currentSemester: "Second Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 3.2,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "B" },
+            { code: "CS102", name: "Computer Architecture", grade: "C" },
+            { code: "MATH101", name: "Calculus I", grade: "B+" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 3.4,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "B+" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "B" },
+            { code: "MATH102", name: "Linear Algebra", grade: "B+" },
+          ]
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 3.3,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "A-" },
+            { code: "CS202", name: "Database Systems", grade: "B" },
+            { code: "CS203", name: "Computer Networks", grade: "C+" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 3.5,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "B+" },
+            { code: "CS205", name: "Web Development", grade: "A" },
+            { code: "CS206", name: "Algorithms", grade: "B" },
+          ]
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 3.8,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "A" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "A" },
+            { code: "CS303", name: "Computer Graphics", grade: "B+" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 3",
+          cgp: 3.9,
+          courses: [
+            { code: "CS304", name: "Machine Learning", grade: "A" },
+            { code: "CS305", name: "Cybersecurity", grade: "A" },
+            { code: "CS306", name: "Cloud Computing", grade: "B+" },
+          ]
+        },
+      ],
+      cgp: 3.3,
+      attendance: 90,
+      performanceData: [
+        { course: "CS301", score: 88 },
+        { course: "CS302", score: 90 },
+        { course: "CS303", score: 85 },
+        { course: "CS304", score: 92 },
+        { course: "CS305", score: 89 },
+      ],
+    },
+  
+    STU003: {
+      name: "Charlie Brown",
+      currentSemester: "Second Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 1.5,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "C" },
+            { code: "CS102", name: "Computer Architecture", grade: "D" },
+            { code: "MATH101", name: "Calculus I", grade: "F" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 1.0,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "D" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "F" },
+            { code: "MATH102", name: "Linear Algebra", grade: "C" },
+          ]
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 1.0,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "D" },
+            { code: "CS202", name: "Database Systems", grade: "F" },
+            { code: "CS203", name: "Computer Networks", grade: "C+" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 1.0,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "F" },
+            { code: "CS205", name: "Web Development", grade: "D" },
+            { code: "CS206", name: "Algorithms", grade: "C" },
+          ]
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 1.0,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "F" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "D" },
+            { code: "CS303", name: "Computer Graphics", grade: "F" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 3",
+          cgp: 1.0,
+          courses: [
+            { code: "CS304", name: "Machine Learning", grade: "D" },
+            { code: "CS305", name: "Cybersecurity", grade: "F" },
+            { code: "CS306", name: "Cloud Computing", grade: "D" },
+          ]
+        },
+      ],
+      cgp: 1.0,
+      attendance: 60,
+      performanceData: [
+        { course: "CS301", score: 50 },
+        { course: "CS302", score: 55 },
+        { course: "CS303", score: 40 },
+        { course: "CS304", score: 30 },
+        { course: "CS305", score: 45 },
+      ],
+    },
+    
+    STU004: {
+      name: "Diana Ross",
+      currentSemester: "Second Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 2.0,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "C" },
+            { code: "CS102", name: "Computer Architecture", grade: "C" },
+            { code: "MATH101", name: "Calculus I", grade: "C+" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 2.0,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "C" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "C+" },
+            { code: "MATH102", name: "Linear Algebra", grade: "C" },
+          ]
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 2.0,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "C+" },
+            { code: "CS202", name: "Database Systems", grade: "C" },
+            { code: "CS203", name: "Computer Networks", grade: "C" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 2.5,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "C+" },
+            { code: "CS205", name: "Web Development", grade: "C+" },
+            { code: "CS206", name: "Algorithms", grade: "C" },
+          ]
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 2.5,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "B" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "B+" },
+            { code: "CS303", name: "Computer Graphics", grade: "B" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 3",
+          cgp: 2.5,
+          courses: [
+            { code: "CS304", name: "Machine Learning", grade: "B" },
+            { code: "CS305", name: "Cybersecurity", grade: "B" },
+            { code: "CS306", name: "Cloud Computing", grade: "B+" },
+          ]
+        },
+      ],
+      cgp: 2.0,
+      attendance: 80,
+      performanceData: [
+        { course: "CS301", score: 78 },
+        { course: "CS302", score: 85 },
+        { course: "CS303", score: 82 },
+        { course: "CS304", score: 79 },
+        { course: "CS305", score: 80 },
+      ],
+    },
+    STU005: {
+      name: "Ethan Hunt",
+      currentSemester: "Second Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 2.0,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "C" },
+            { code: "CS102", name: "Computer Architecture", grade: "D" },
+            { code: "MATH101", name: "Calculus I", grade: "C" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 1.5,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "D" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "D" },
+            { code: "MATH102", name: "Linear Algebra", grade: "C" },
+          ]
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 2.0,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "C" },
+            { code: "CS202", name: "Database Systems", grade: "C" },
+            { code: "CS203", name: "Computer Networks", grade: "C" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 2.0,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "C" },
+            { code: "CS205", name: "Web Development", grade: "B" },
+            { code: "CS206", name: "Algorithms", grade: "C+" },
+          ]
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 2.0,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "B" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "B" },
+            { code: "CS303", name: "Computer Graphics", grade: "C" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 3",
+          cgp: 2.5,
+          courses: [
+            { code: "CS304", name: "Machine Learning", grade: "B" },
+            { code: "CS305", name: "Cybersecurity", grade: "C" },
+            { code: "CS306", name: "Cloud Computing", grade: "B+" },
+          ]
+        },
+      ],
+      cgp: 2.0,
+      attendance: 70,
+      performanceData: [
+        { course: "CS301", score: 65 },
+        { course: "CS302", score: 70 },
+        { course: "CS303", score: 68 },
+        { course: "CS304", score: 72 },
+        { course: "CS305", score: 75 },
+      ],
+    },
+    STU006: {
+      name: "Fiona Gallagher",
+      currentSemester: "Second Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 3.5,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "B" },
+            { code: "CS102", name: "Computer Architecture", grade: "A" },
+            { code: "MATH101", name: "Calculus I", grade: "A" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 3.8,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "A" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "A" },
+            { code: "MATH102", name: "Linear Algebra", grade: "B+" },
+          ]
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 3.7,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "A" },
+            { code: "CS202", name: "Database Systems", grade: "B" },
+            { code: "CS203", name: "Computer Networks", grade: "A" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 3.5,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "B+" },
+            { code: "CS205", name: "Web Development", grade: "A" },
+            { code: "CS206", name: "Algorithms", grade: "A" },
+          ]
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 3.5,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "A" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "A" },
+            { code: "CS303", name: "Computer Graphics", grade: "B+" },
+          ]
+        },
+        {
+          name: "Second Semester, Year 3",
+          cgp: 3.5,
+          courses: [
+            { code: "CS304", name: "Machine Learning", grade: "A" },
+            { code: "CS305", name: "Cybersecurity", grade: "A" },
+            { code: "CS306", name: "Cloud Computing", grade: "A" },
+          ]
+        },
+      ],
+      cgp: 3.5,
+      attendance: 90,
+      performanceData: [
+        { course: "CS301", score: 90 },
+        { course: "CS302", score: 92 },
+        { course: "CS303", score: 88 },
+        { course: "CS304", score: 95 },
+        { course: "CS305", score: 93 },
+      ],
+    },
+    STU007: {
+      name: "George Wilson",
+      currentSemester: "First Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 2.5,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "C" },
+            { code: "CS102", name: "Computer Architecture", grade: "B" },
+            { code: "MATH101", name: "Calculus I", grade: "C+" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 2.8,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "B-" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "C+" },
+            { code: "MATH102", name: "Linear Algebra", grade: "B" },
+          ],
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 2.9,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "B" },
+            { code: "CS202", name: "Database Systems", grade: "C" },
+            { code: "CS203", name: "Computer Networks", grade: "C" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 3.0,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "B+" },
+            { code: "CS205", name: "Web Development", grade: "A-" },
+            { code: "CS206", name: "Algorithms", grade: "C+" },
+          ],
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 2.8,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "B" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "C+" },
+            { code: "CS303", name: "Computer Graphics", grade: "B-" },
+          ],
+        },
+      ],
+      cgp: 2.8,
+      attendance: 88,
+      performanceData: [
+        { course: "CS301", score: 82 },
+        { course: "CS302", score: 75 },
+        { course: "CS303", score: 78 },
+      ],
+    },
+    STU008: {
+      name: "Hannah Montana",
+      currentSemester: "Second Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 3.0,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "A" },
+            { code: "CS102", name: "Computer Architecture", grade: "B+" },
+            { code: "MATH101", name: "Calculus I", grade: "A-" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 3.2,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "A" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "B+" },
+            { code: "MATH102", name: "Linear Algebra", grade: "A" },
+          ],
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 3.4,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "A" },
+            { code: "CS202", name: "Database Systems", grade: "A" },
+            { code: "CS203", name: "Computer Networks", grade: "A-" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 3.6,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "A+" },
+            { code: "CS205", name: "Web Development", grade: "A" },
+            { code: "CS206", name: "Algorithms", grade: "A-" },
+          ],
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 3.5,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "A" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "A" },
+            { code: "CS303", name: "Computer Graphics", grade: "A" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 3",
+          cgp: 3.5,
+          courses: [
+            { code: "CS304", name: "Machine Learning", grade: "A" },
+            { code: "CS305", name: "Cybersecurity", grade: "A" },
+            { code: "CS306", name: "Cloud Computing", grade: "A" },
+          ],
+        },
+      ],
+      cgp: 3.5,
+      attendance: 92,
+      performanceData: [
+        { course: "CS301", score: 88 },
+        { course: "CS302", score: 90 },
+        { course: "CS303", score: 91 },
+        { course: "CS304", score: 89 },
+        { course: "CS305", score: 95 },
+      ],
+    },
+    STU009: {
+      name: "Ian McKellen",
+      currentSemester: "First Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 3.2,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "B" },
+            { code: "CS102", name: "Computer Architecture", grade: "B+" },
+            { code: "MATH101", name: "Calculus I", grade: "A" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 3.4,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "A" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "A-" },
+            { code: "MATH102", name: "Linear Algebra", grade: "B" },
+          ],
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 3.0,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "B" },
+            { code: "CS202", name: "Database Systems", grade: "B+" },
+            { code: "CS203", name: "Computer Networks", grade: "B" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 3.2,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "B+" },
+            { code: "CS205", name: "Web Development", grade: "A-" },
+            { code: "CS206", name: "Algorithms", grade: "C+" },
+          ],
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 3.2,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "B+" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "A" },
+            { code: "CS303", name: "Computer Graphics", grade: "B" },
+          ],
+        },
+      ],
+      cgp: 3.2,
+      attendance: 90,
+      performanceData: [
+        { course: "CS301", score: 84 },
+        { course: "CS302", score: 88 },
+        { course: "CS303", score: 86 },
+      ],
+    },
+    STU010: {
+      name: "Julia Roberts",
+      currentSemester: "First Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 2.7,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "C+" },
+            { code: "CS102", name: "Computer Architecture", grade: "C" },
+            { code: "MATH101", name: "Calculus I", grade: "C" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 2.5,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "C+" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "C" },
+            { code: "MATH102", name: "Linear Algebra", grade: "B" },
+          ],
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 2.6,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "C" },
+            { code: "CS202", name: "Database Systems", grade: "C" },
+            { code: "CS203", name: "Computer Networks", grade: "D" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 2.4,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "C" },
+            { code: "CS205", name: "Web Development", grade: "C" },
+            { code: "CS206", name: "Algorithms", grade: "C" },
+          ],
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 2.5,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "C" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "C+" },
+            { code: "CS303", name: "Computer Graphics", grade: "D" },
+          ],
+        },
+      ],
+      cgp: 2.5,
+      attendance: 85,
+      performanceData: [
+        { course: "CS301", score: 75 },
+        { course: "CS302", score: 78 },
+        { course: "CS303", score: 70 },
+      ],
+    },
+    STU011: {
+      name: "Kevin Hart",
+      currentSemester: "First Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 2.0,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "D" },
+            { code: "CS102", name: "Computer Architecture", grade: "D" },
+            { code: "MATH101", name: "Calculus I", grade: "D" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 1.9,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "D" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "D" },
+            { code: "MATH102", name: "Linear Algebra", grade: "D" },
+          ],
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 1.7,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "D" },
+            { code: "CS202", name: "Database Systems", grade: "D" },
+            { code: "CS203", name: "Computer Networks", grade: "F" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 1.8,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "D" },
+            { code: "CS205", name: "Web Development", grade: "D" },
+            { code: "CS206", name: "Algorithms", grade: "D" },
+          ],
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 1.8,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "D" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "D" },
+            { code: "CS303", name: "Computer Graphics", grade: "D" },
+          ],
+        },
+      ],
+      cgp: 1.8,
+      attendance: 80,
+      performanceData: [
+        { course: "CS301", score: 60 },
+        { course: "CS302", score: 62 },
+        { course: "CS303", score: 58 },
+      ],
+    },
+    STU012: {
+      name: "Liam Neeson",
+      currentSemester: "First Semester, Year 3",
+      semesters: [
+        {
+          name: "First Semester, Year 1",
+          cgp: 3.5,
+          courses: [
+            { code: "CS101", name: "Introduction to Programming", grade: "A" },
+            { code: "CS102", name: "Computer Architecture", grade: "B+" },
+            { code: "MATH101", name: "Calculus I", grade: "A" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 1",
+          cgp: 3.6,
+          courses: [
+            { code: "CS103", name: "Data Structures", grade: "A" },
+            { code: "CS104", name: "Discrete Mathematics", grade: "A" },
+            { code: "MATH102", name: "Linear Algebra", grade: "A" },
+          ],
+        },
+        {
+          name: "First Semester, Year 2",
+          cgp: 3.8,
+          courses: [
+            { code: "CS201", name: "Object-Oriented Programming", grade: "A+" },
+            { code: "CS202", name: "Database Systems", grade: "A" },
+            { code: "CS203", name: "Computer Networks", grade: "A" },
+          ],
+        },
+        {
+          name: "Second Semester, Year 2",
+          cgp: 3.9,
+          courses: [
+            { code: "CS204", name: "Operating Systems", grade: "A+" },
+            { code: "CS205", name: "Web Development", grade: "A+" },
+            { code: "CS206", name: "Algorithms", grade: "A" },
+          ],
+        },
+        {
+          name: "First Semester, Year 3",
+          cgp: 3.7,
+          courses: [
+            { code: "CS301", name: "Software Engineering", grade: "A" },
+            { code: "CS302", name: "Artificial Intelligence", grade: "A" },
+            { code: "CS303", name: "Computer Graphics", grade: "A" },
+          ],
+        },
+      ],
+      cgp: 3.7,
+      attendance: 95,
+      performanceData: [
+        { course: "CS301", score: 92 },
+        { course: "CS302", score: 90 },
+        { course: "CS303", score: 93 },
+      ],
+    },
+
+  };
   
 
-  // Course details
-  const courseDetails = [
-    { courseCode: "CS101", courseTitle: "Introduction to Programming", unit: 3 },
-    { courseCode: "CS102", courseTitle: "Computer Architecture", unit: 4 },
-    { courseCode: "CS103", courseTitle: "Data Structures", unit: 3 },
-    { courseCode: "CS104", courseTitle: "Operating Systems", unit: 4 },
-    { courseCode: "CS105", courseTitle: "Web Technologies", unit: 3 },
-    { courseCode: "CS201", courseTitle: "Software Engineering", unit: 3 },
-    { courseCode: "CS202", courseTitle: "Database Systems", unit: 3 },
-    { courseCode: "CS203", courseTitle: "Artificial Intelligence", unit: 4 },
-    { courseCode: "CS204", courseTitle: "Computer Networks", unit: 3 },
-    { courseCode: "CS301", courseTitle: "Algorithms", unit: 4 },
-    { courseCode: "CS302", courseTitle: "Mobile App Development", unit: 3 },
-    { courseCode: "CS303", courseTitle: "Cloud Computing", unit: 4 },
-    { courseCode: "CS304", courseTitle: "Cybersecurity", unit: 3 },
-    { courseCode: "CS305", courseTitle: "Human-Computer Interaction", unit: 3 },
-    { courseCode: "CS401", courseTitle: "Machine Learning", unit: 4 },
-    { courseCode: "CS402", courseTitle: "Data Mining", unit: 3 },
-    { courseCode: "CS403", courseTitle: "Game Development", unit: 4 },
-    { courseCode: "CS404", courseTitle: "Digital Signal Processing", unit: 3 },
-    { courseCode: "CS405", courseTitle: "Distributed Systems", unit: 4 },
-    { courseCode: "CS501", courseTitle: "Big Data Analytics", unit: 3 },
-    { courseCode: "CS502", courseTitle: "Blockchain Technology", unit: 3 },
-    { courseCode: "CS503", courseTitle: "Advanced Web Development", unit: 4 },
-    { courseCode: "CS504", courseTitle: "Virtual Reality", unit: 3 },
-    { courseCode: "CS505", courseTitle: "Digital Forensics", unit: 4 },
-    { courseCode: "CS601", courseTitle: "Ethical Hacking", unit: 3 },
-    { courseCode: "CS602", courseTitle: "Internet of Things", unit: 4 },
-    { courseCode: "CS603", courseTitle: "Quantum Computing", unit: 3 },
-    { courseCode: "CS604", courseTitle: "Augmented Reality", unit: 4 },
-    { courseCode: "CS605", courseTitle: "Computer Graphics", unit: 3 },
-    { courseCode: "CS606", courseTitle: "Natural Language Processing", unit: 4 },
-    { courseCode: "CS607", courseTitle: "Robotics", unit: 3 },
-    { courseCode: "CS608", courseTitle: "Systems Programming", unit: 4 },
-    { courseCode: "CS609", courseTitle: "Compiler Design", unit: 3 },
-    { courseCode: "CS610", courseTitle: "Software Testing", unit: 4 },
-  ];
   
-
-  // Performance metrics
-  const performanceMetrics = [
-    { studentId: "STU001", courseCode: "CS101", caTest: 20, attendance: 92, exam: 75, total: 95, grade: "A" },
-    { studentId: "STU002", courseCode: "CS102", caTest: 18, attendance: 85, exam: 70, total: 86, grade: "B" },
-    { studentId: "STU003", courseCode: "CS103", caTest: 16, attendance: 60, exam: 45, total: 65, grade: "D" },
-    { studentId: "STU004", courseCode: "CS104", caTest: 22, attendance: 78, exam: 58, total: 80, grade: "B" },
-    { studentId: "STU005", courseCode: "CS105", caTest: 19, attendance: 90, exam: 40, total: 65, grade: "C" },
-    { studentId: "STU006", courseCode: "CS201", caTest: 25, attendance: 95, exam: 85, total: 95, grade: "A" },
-    { studentId: "STU007", courseCode: "CS202", caTest: 15, attendance: 70, exam: 30, total: 50, grade: "F" },
-    { studentId: "STU008", courseCode: "CS203", caTest: 20, attendance: 88, exam: 75, total: 85, grade: "A" },
-    { studentId: "STU009", courseCode: "CS204", caTest: 21, attendance: 80, exam: 50, total: 70, grade: "C" },
-    { studentId: "STU010", courseCode: "CS301", caTest: 19, attendance: 95, exam: 68, total: 80, grade: "B" },
-    { studentId: "STU011", courseCode: "CS302", caTest: 24, attendance: 90, exam: 80, total: 90, grade: "A" },
-    { studentId: "STU012", courseCode: "CS303", caTest: 12, attendance: 60, exam: 45, total: 55, grade: "D" },
-    { studentId: "STU013", courseCode: "CS401", caTest: 20, attendance: 78, exam: 60, total: 80, grade: "B" },
-    { studentId: "STU014", courseCode: "CS402", caTest: 15, attendance: 65, exam: 50, total: 60, grade: "C" },
-    { studentId: "STU015", courseCode: "CS403", caTest: 23, attendance: 90, exam: 85, total: 95, grade: "A" },
-    { studentId: "STU016", courseCode: "CS404", caTest: 18, attendance: 80, exam: 70, total: 80, grade: "B" },
-    { studentId: "STU017", courseCode: "CS405", caTest: 14, attendance: 75, exam: 35, total: 55, grade: "D" },
-    { studentId: "STU018", courseCode: "CS501", caTest: 19, attendance: 85, exam: 60, total: 75, grade: "C" },
-    { studentId: "STU019", courseCode: "CS502", caTest: 22, attendance: 95, exam: 90, total: 95, grade: "A" },
-    { studentId: "STU020", courseCode: "CS503", caTest: 20, attendance: 70, exam: 55, total: 70, grade: "B" },
-    { studentId: "STU021", courseCode: "CS504", caTest: 13, attendance: 60, exam: 40, total: 53, grade: "F" },
-    { studentId: "STU022", courseCode: "CS505", caTest: 15, attendance: 80, exam: 50, total: 65, grade: "C" },
-    { studentId: "STU023", courseCode: "CS601", caTest: 21, attendance: 90, exam: 70, total: 85, grade: "B" },
-    { studentId: "STU024", courseCode: "CS602", caTest: 24, attendance: 92, exam: 82, total: 95, grade: "A" },
-    { studentId: "STU025", courseCode: "CS603", caTest: 10, attendance: 55, exam: 35, total: 45, grade: "F" },
-    { studentId: "STU026", courseCode: "CS604", caTest: 18, attendance: 70, exam: 50, total: 68, grade: "C" },
-    { studentId: "STU027", courseCode: "CS605", caTest: 22, attendance: 90, exam: 75, total: 90, grade: "A" },
-    { studentId: "STU028", courseCode: "CS606", caTest: 20, attendance: 85, exam: 60, total: 80, grade: "B" },
-    { studentId: "STU029", courseCode: "CS607", caTest: 15, attendance: 65, exam: 40, total: 50, grade: "D" },
-    { studentId: "STU030", courseCode: "CS608", caTest: 19, attendance: 78, exam: 68, total: 85, grade: "B" },
-];
+  // Add similar detailed data for STU003 to STU015
 
 
-  // Function to generate realistic student data
   const generateStudentData = (numStudents: number) => {
     const courses = ['CS301', 'CS205', 'CS401']
     return Array.from({ length: numStudents }, (_, i) => ({
       id: `STU${(i + 1).toString().padStart(3, '0')}`,
-      CS301: Math.floor(Math.random() * 41) + 60, // Grades between 60 and 100
+      CS301: Math.floor(Math.random() * 41) + 60,
       CS205: Math.floor(Math.random() * 41) + 60,
       CS401: Math.floor(Math.random() * 41) + 60,
     }))
@@ -256,11 +941,19 @@ export default function LecturerDashboard() {
 
   const studentData = generateStudentData(100)
 
-  const chartData = studentData.map((student) => ({
-    x: student[selectedCourse as keyof typeof student],
-    y: student[selectedCourse === 'CS301' ? 'CS205' : selectedCourse === 'CS205' ? 'CS401' : 'CS301'] as number,
-    z: student.id,
-  }))
+  const prepareChartData = () => {
+    return studentData.map((student, index) => ({
+      name: student.id,
+      [selectedCourses[0]]: student[selectedCourses[0] as keyof typeof student],
+      [selectedCourses[1]]: student[selectedCourses[1] as keyof typeof student],
+    }))
+  }
+
+  const [chartData, setChartData] = useState(prepareChartData())
+
+  useEffect(() => {
+    setChartData(prepareChartData())
+  }, [selectedCourses])
 
   const courseNames = {
     CS301: "Database Systems",
@@ -268,20 +961,42 @@ export default function LecturerDashboard() {
     CS401: "Algorithms"
   }
 
-  // Function to determine remark based on performance
-  const getRemark = (attendance: number, total: number, grade: string) => {
-    if (attendance < 75) return "Boost attendance level"
-    if (total < 60) return "Consider reducing credit units next semester"
-    if (grade === "A" || grade === "B") return "Keep it up"
-    return "Average performance, can improve"
+  // const getRemark = (attendance: number, total: number, grade: string) => {
+  //   if (attendance < 75) return "Boost attendance level"
+  //   if (total < 60) return "Consider reducing credit units next semester"
+  //   if (grade === "A" || grade === "B") return "Keep it up"
+  //   return "Average performance, can improve"
+  // }
+
+
+  const getPerformanceColor = (cgp: number) => {
+    if (cgp >= 3.5) return "bg-green-100 text-green-800"
+    if (cgp >= 2.5) return "bg-yellow-100 text-yellow-800"
+    return "bg-red-100 text-red-800"
   }
 
-  // Mock function to send notification to student
-  const sendNotification = (studentId: string, message: string) => {
-    console.log(`Sending notification to student ${studentId}: ${message}`)
+
+  const getRemark = (attendance: number, cgp: number) => {
+    if (attendance < 75) return "Boost attendance level"
+    if (cgp < 2.0) return "Consider reducing credit units next semester"
+    if (cgp >= 3.5) return "Excellent performance"
+    return "Average performance, room for improvement"
+  }
+
+  const openStudentModal = (studentId: string) => {
+    const student = studentDetails[studentId as keyof typeof studentDetails];
+    if (student && student.semesters && student.semesters.length > 0) {
+      setSelectedStudent(student);
+      setSelectedSemester(student.semesters[0].name);
+    } else {
+      setSelectedStudent(null);
+      setSelectedSemester(null);
+    }
+  }
+  const notifyStudent = (studentId: string, message: string) => {
     toast({
       title: "Notification Sent",
-      description: `Message sent to student ${studentId}`,
+      description: `Message sent to student ${studentId}: ${message}`,
     })
   }
 
@@ -365,116 +1080,165 @@ export default function LecturerDashboard() {
           <CardDescription>Detailed view of student data and metrics</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="students">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="students">Students</TabsTrigger>
-              <TabsTrigger value="courses">Courses</TabsTrigger>
-              <TabsTrigger value="performance">Performance</TabsTrigger>
-            </TabsList>
-            <TabsContent value="students">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Student ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>CGP</TableHead>
-                    <TableHead>Classification</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {studentInfo.map((student) => (
-                    <TableRow key={student.id}>
-                      <TableCell>{student.id}</TableCell>
-                      <TableCell>{student.name}</TableCell>
-                      <TableCell>{student.cgp.toFixed(2)}</TableCell>
-                      <TableCell>{student.classification}</TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          onClick={() => sendNotification(student.id, "Keep up the good work!")}
-                        >
-                          <Bell className="w-4 h-4 mr-2" />
-                          Notify
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-            <TabsContent value="courses">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Course Code</TableHead>
-                    <TableHead>Course Title</TableHead>
-                    <TableHead>Unit</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {courseDetails.map((course) => (
-                    <TableRow key={course.courseCode}>
-                      <TableCell>{course.courseCode}</TableCell>
-                      <TableCell>{course.courseTitle}</TableCell>
-                      <TableCell>{course.unit}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-            <TabsContent value="performance">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Student ID</TableHead>
-                    <TableHead>Course Code</TableHead>
-                    <TableHead>CA Test</TableHead>
-                    <TableHead>Attendance (%)</TableHead>
-                    <TableHead>Exam</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Grade</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {performanceMetrics.map((metric, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{metric.studentId}</TableCell>
-                      <TableCell>{metric.courseCode}</TableCell>
-                      <TableCell>{metric.caTest}</TableCell>
-                      <TableCell>{metric.attendance}</TableCell>
-                      <TableCell>{metric.exam}</TableCell>
-                      <TableCell>{metric.total}</TableCell>
-                      <TableCell>{metric.grade}</TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          onClick={() => sendNotification(metric.studentId, getRemark(metric.attendance, metric.total, metric.grade))}
-                        >
-                          <Bell className="w-4 h-4 mr-2" />
-                          Boost
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-          </Tabs>
+        <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Student ID</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>CGP</TableHead>
+            <TableHead>Classification</TableHead>
+            <TableHead>Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {studentInfo.map((student) => (
+            <TableRow key={student.id}>
+              <TableCell>{student.id}</TableCell>
+              <TableCell>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="link" onClick={() => openStudentModal(student.id)}>
+                      {student.name}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl">
+                    <DialogHeader>
+                      <DialogTitle>{selectedStudent?.name}</DialogTitle>
+                      <DialogDescription>Student Details and Performance</DialogDescription>
+                    </DialogHeader>
+                    {selectedStudent && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2">Current Semester</h3>
+                          <p>{selectedStudent.currentSemester}</p>
+                          <h3 className="text-lg font-semibold mt-4 mb-2">Overall CGP</h3>
+                          <Badge className={getPerformanceColor(selectedStudent.cgp)}>
+                            {selectedStudent.cgp.toFixed(2)}
+                          </Badge>
+                          <h3 className="text-lg font-semibold mt-4 mb-2">Attendance</h3>
+                          <Badge className={selectedStudent.attendance < 75 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>
+                            {selectedStudent.attendance}%
+                          </Badge>
+                          <h3 className="text-lg font-semibold mt-4 mb-2">Remark</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {getRemark(selectedStudent.attendance, selectedStudent.cgp)}
+                          </p>
+                          {(selectedStudent.cgp < 2.5 || selectedStudent.attendance < 75) && (
+                            <Button
+                              className="mt-2"
+                              onClick={() => notifyStudent(selectedStudent.id, "Your performance needs improvement. Please see your advisor.")}
+                            >
+                              <TrendingUp className="w-4 h-4 mr-2" />
+                              Notify for Improvement
+                            </Button>
+                          )}
+                          <h3 className="text-lg font-semibold mt-4 mb-2">Performance Graph</h3>
+                          <ChartContainer
+                            config={{
+                              score: {
+                                label: "Score",
+                                color: "hsl(var(--chart-1))",
+                              },
+                            }}
+                            className="h-[200px]"
+                          >
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={selectedStudent.performanceData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="course" />
+                                <YAxis />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <Bar dataKey="score" fill="var(--color-score)" />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </ChartContainer>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2">Semester Courses</h3>
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {selectedStudent.semesters.map((semester, index) => (
+                              <Button
+                                key={index}
+                                variant={selectedSemester === semester.name ? "default" : "outline"}
+                                onClick={() => setSelectedSemester(semester.name)}
+                              >
+                                {semester.name.split(',')[0]}
+                              </Button>
+                            ))}
+                          </div>
+                          {selectedSemester && (
+                            <div>
+                              <h4 className="font-semibold mb-2">{selectedSemester}</h4>
+                              <p className="mb-2">CGP: {selectedStudent.semesters.find(s => s.name === selectedSemester)?.cgp.toFixed(2)}</p>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Course Code</TableHead>
+                                    <TableHead>Course Name</TableHead>
+                                    <TableHead>Grade</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {selectedStudent.semesters.find(s => s.name === selectedSemester)?.courses.map((course, index) => (
+                                    <TableRow key={index}>
+                                      <TableCell>{course.code}</TableCell>
+                                      <TableCell>{course.name}</TableCell>
+                                      <TableCell>{course.grade}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              
+                              </Table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
+              </TableCell>
+              <TableCell>
+                <Badge className={getPerformanceColor(student.cgp)}>
+                  {student.cgp.toFixed(2)}
+                </Badge>
+              </TableCell>
+              <TableCell>{student.classification}</TableCell>
+              <TableCell>
+                <Button
+                  size="sm"
+                  onClick={() => notifyStudent(student.id, "General notification from your lecturer.")}
+                >
+                  <Bell className="w-4 h-4 mr-2" />
+                  Notify
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
         </CardContent>
       </Card>
 
       <Card className="mt-6 overflow-hidden">
         <CardHeader>
-          <CardTitle>Student Performance Overview (100 Students)</CardTitle>
-          <CardDescription>Comparison of student grades across courses</CardDescription>
+          <CardTitle>Student Performance Comparison</CardTitle>
+          <CardDescription>Compare student grades across two courses</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-4">
-            <Select onValueChange={setSelectedCourse} defaultValue={selectedCourse}>
+          <div className="flex gap-4 mb-4">
+            <Select onValueChange={(value) => setSelectedCourses([value, selectedCourses[1]])} defaultValue={selectedCourses[0]}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select a course" />
+                <SelectValue placeholder="Select first course" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="CS301">CS301: Database Systems</SelectItem>
+                <SelectItem value="CS205">CS205: Web Development</SelectItem>
+                <SelectItem value="CS401">CS401: Algorithms</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select onValueChange={(value) => setSelectedCourses([selectedCourses[0], value])} defaultValue={selectedCourses[1]}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select second course" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="CS301">CS301: Database Systems</SelectItem>
@@ -485,31 +1249,27 @@ export default function LecturerDashboard() {
           </div>
           <ChartContainer
             config={{
-              x: {
-                label: courseNames[selectedCourse as keyof typeof courseNames],
+              [selectedCourses[0]]: {
+                label: courseNames[selectedCourses[0] as keyof typeof courseNames],
                 color: "hsl(var(--chart-1))",
               },
-              y: {
-                label: courseNames[selectedCourse === 'CS301' ? 'CS205' : selectedCourse === 'CS205'   ? 'CS401' : 'CS301'],
+              [selectedCourses[1]]: {
+                label: courseNames[selectedCourses[1] as keyof typeof courseNames],
                 color: "hsl(var(--chart-2))",
               },
             }}
             className="h-[400px]"
           >
             <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                <CartesianGrid />
-                <XAxis type="number" dataKey="x" name={courseNames[selectedCourse as keyof typeof courseNames]} unit="%" />
-                <YAxis 
-                  type="number" 
-                  dataKey="y" 
-                  name={courseNames[selectedCourse === 'CS301' ? 'CS205' : selectedCourse === 'CS205' ? 'CS401' : 'CS301']} 
-                  unit="%" 
-                />
-                <ZAxis type="category" dataKey="z" name="Student ID" />
-                <ChartTooltip cursor={{ strokeDasharray: '3 3' }} content={<ChartTooltipContent />} />
-                <Scatter name="Students" data={chartData} fill="var(--color-x)" />
-              </ScatterChart>
+              <LineChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend />
+                <Line type="monotone" dataKey={selectedCourses[0]} stroke="var(--color-x)" activeDot={{ r: 8 }} />
+                <Line type="monotone" dataKey={selectedCourses[1]} stroke="var(--color-y)" activeDot={{ r: 8 }} />
+              </LineChart>
             </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
@@ -682,3 +1442,4 @@ export default function LecturerDashboard() {
     </div>
   )
 }
+
