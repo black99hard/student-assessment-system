@@ -21,6 +21,10 @@ import { toast } from "@/hooks/use-toast"
 import withAuth from '@/lib/withAuth'
 import { TrendingUp } from 'lucide-react'
 
+interface Semester {
+  name: string; // Example property
+  // Add other properties as needed
+}
 
 
 export default  function LecturerDashboard() {
@@ -1155,17 +1159,17 @@ export default  function LecturerDashboard() {
                         </div>
                         <div>
                         <h3 className="text-lg font-semibold mb-2">Semester Courses</h3>
-<div className="flex flex-wrap gap-2 mb-4">
-    {selectedStudent.semesters.map((semester: Semester, index: number) => (
-        <Button
-            key={index}
-            variant={selectedSemester === semester.name ? "default" : "outline"}
-            onClick={() => setSelectedSemester(semester.name)}
-        >
-            {semester.name.split(',')[0]}
-        </Button>
-    ))}
-</div>
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                  {selectedStudent.semesters.map((semester: Semester, index: number) => (
+                                      <Button
+                                          key={index}
+                                          variant={selectedSemester === semester.name ? "default" : "outline"}
+                                          onClick={() => setSelectedSemester(semester.name)}
+                                      >
+                                          {semester.name.split(',')[0]}
+                                      </Button>
+                                  ))}
+                              </div>
 
                           {selectedSemester && (
                             <div>
