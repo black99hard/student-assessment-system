@@ -1158,7 +1158,7 @@ export default  function LecturerDashboard() {
                         <div>
                           <h3 className="text-lg font-semibold mb-2">Semester Courses</h3>
                           <div className="flex flex-wrap gap-2 mb-4">
-                          {selectedStudent.semesters.map((semester: Semester, index) => (
+                          {selectedStudent.semesters.map((semester: Semester, index: IndexType) => (
                               <Button
                                 key={index}
                                 variant={selectedSemester === semester.name ? "default" : "outline"}
