@@ -21,7 +21,9 @@ import { toast } from "@/hooks/use-toast"
 import withAuth from '@/lib/withAuth'
 import { TrendingUp } from 'lucide-react'
 
-
+interface Semester {
+  name: string;
+}
 
 export default  function LecturerDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date())
@@ -1156,7 +1158,7 @@ export default  function LecturerDashboard() {
                         <div>
                           <h3 className="text-lg font-semibold mb-2">Semester Courses</h3>
                           <div className="flex flex-wrap gap-2 mb-4">
-                            {selectedStudent.semesters.map((semester, index) => (
+                          {selectedStudent.semesters.map((semester: { name: string }, index) => (
                               <Button
                                 key={index}
                                 variant={selectedSemester === semester.name ? "default" : "outline"}
