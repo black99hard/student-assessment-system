@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { AwaitedReactNode, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
@@ -1171,7 +1171,7 @@ export default  function LecturerDashboard() {
                           {selectedSemester && (
                             <div>
                               <h4 className="font-semibold mb-2">{selectedSemester}</h4>
-                              <p className="mb-2">CGP: {selectedStudent.semesters.find(s => s.name === selectedSemester)?.cgp.toFixed(2)}</p>
+                              <p className="mb-2">CGP: {selectedStudent.semesters.find((s: { name: string }) => s.name === selectedSemester)?.cgp.toFixed(2)}</p>
                               <Table>
                                 <TableHeader>
                                   <TableRow>
@@ -1181,7 +1181,7 @@ export default  function LecturerDashboard() {
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                  {selectedStudent.semesters.find(s => s.name === selectedSemester)?.courses.map((course, index) => (
+                                  {selectedStudent.semesters.find((s: { name: string }) => s.name === selectedSemester)?.courses.map((course: { code: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; name: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; grade: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined }, index: Key | null | undefined) => (
                                     <TableRow key={index}>
                                       <TableCell>{course.code}</TableCell>
                                       <TableCell>{course.name}</TableCell>
