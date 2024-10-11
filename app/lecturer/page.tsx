@@ -1,6 +1,6 @@
 'use client'
 
-import { AwaitedReactNode, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
@@ -21,9 +21,7 @@ import { toast } from "@/hooks/use-toast"
 import withAuth from '@/lib/withAuth'
 import { TrendingUp } from 'lucide-react'
 
-interface Semester {
-  name: string;
-}
+
 
 export default  function LecturerDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date())
@@ -1156,22 +1154,23 @@ export default  function LecturerDashboard() {
                           </ChartContainer>
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold mb-2">Semester Courses</h3>
-                          <div className="flex flex-wrap gap-2 mb-4">
-                          {selectedStudent.semesters.map((semester: Semester, index: IndexType) => (
-                              <Button
-                                key={index}
-                                variant={selectedSemester === semester.name ? "default" : "outline"}
-                                onClick={() => setSelectedSemester(semester.name)}
-                              >
-                                {semester.name.split(',')[0]}
-                              </Button>
-                            ))}
-                          </div>
+                        <h3 className="text-lg font-semibold mb-2">Semester Courses</h3>
+<div className="flex flex-wrap gap-2 mb-4">
+    {selectedStudent.semesters.map((semester: Semester, index: number) => (
+        <Button
+            key={index}
+            variant={selectedSemester === semester.name ? "default" : "outline"}
+            onClick={() => setSelectedSemester(semester.name)}
+        >
+            {semester.name.split(',')[0]}
+        </Button>
+    ))}
+</div>
+
                           {selectedSemester && (
                             <div>
                               <h4 className="font-semibold mb-2">{selectedSemester}</h4>
-                              <p className="mb-2">CGP: {selectedStudent.semesters.find((s: { name: string }) => s.name === selectedSemester)?.cgp.toFixed(2)}</p>
+                              <p className="mb-2">CGP: {selectedStudent.semesters.find(s => s.name === selectedSemester)?.cgp.toFixed(2)}</p>
                               <Table>
                                 <TableHeader>
                                   <TableRow>
@@ -1181,7 +1180,7 @@ export default  function LecturerDashboard() {
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                  {selectedStudent.semesters.find((s: { name: string }) => s.name === selectedSemester)?.courses.map((course: { code: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; name: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; grade: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined }, index: Key | null | undefined) => (
+                                  {selectedStudent.semesters.find(s => s.name === selectedSemester)?.courses.map((course, index) => (
                                     <TableRow key={index}>
                                       <TableCell>{course.code}</TableCell>
                                       <TableCell>{course.name}</TableCell>
