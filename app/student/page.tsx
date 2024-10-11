@@ -13,7 +13,27 @@ import { Progress } from "@/components/ui/progress";
 import { Calendar as  FileText,  AlertTriangle,  } from 'lucide-react';
 import {  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
-
+interface CourseMaterial {
+  id: number;
+  title: string;
+  course: string;
+  courseTitle: string;
+  type: string;
+  link: string;
+  description: string;
+  assignments: {
+    id: number;
+    title: string;
+    dueDate: string;
+    status: string;
+  }[];
+  resources: {
+    id: number;
+    title: string;
+    type: string;
+  }[];
+}
+ 
 export default function EnhancedStudentDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedMaterial, setSelectedMaterial] = useState(null);
@@ -354,7 +374,7 @@ export default function EnhancedStudentDashboard() {
       </Card>
 
       <div className="grid gap-6 mt-6 md:grid-cols-2">
-        <Card>
+      <Card>
           <CardHeader>
             <CardTitle>Course Materials</CardTitle>
             <CardDescription>Access your current semester materials</CardDescription>
@@ -379,56 +399,60 @@ export default function EnhancedStudentDashboard() {
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-3xl">
-                        <DialogHeader>
-                          <DialogTitle>{material.courseTitle}</DialogTitle>
-                          <DialogDescription>{material.description}</DialogDescription>
-                        </DialogHeader>
-                        <Tabs defaultValue="assignments">
-                          <TabsList>
-                            <TabsTrigger value="assignments">Assignments</TabsTrigger>
-                            <TabsTrigger value="resources">Resources</TabsTrigger>
-                          </TabsList>
-                          <TabsContent value="assignments">
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>Title</TableHead>
-                                  <TableHead>Due Date</TableHead>
-                                  <TableHead>Status</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {material.assignments.map((assignment) => (
-                                  <TableRow key={assignment.id}>
-                                    <TableCell>{assignment.title}</TableCell>
-                                    <TableCell>{assignment.dueDate}</TableCell>
-                                    <TableCell>
-                                      <Badge 
-                                        variant={
-                                          assignment.status === "Submitted" ? "success" :
-                                          assignment.status === "In Progress" ? "warning" : "secondary"
-                                        }
-                                      >
-                                        {assignment.status}
-                                      </Badge>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </TabsContent>
-                          <TabsContent value="resources">
-                            <ul className="space-y-2">
-                              {material.resources.map((resource) => (
-                                <li key={resource.id} className="flex items-center space-x-2">
-                                  <FileText className="h-4 w-4" />
-                                  <span>{resource.title}</span>
-                                  <Badge variant="outline">{resource.type}</Badge>
-                                </li>
-                              ))}
-                            </ul>
-                          </TabsContent>
-                        </Tabs>
+                        {selectedMaterial && (
+                          <>
+                            <DialogHeader>
+                              <DialogTitle>{selectedMaterial.courseTitle}</DialogTitle>
+                              <DialogDescription>{selectedMaterial.description}</DialogDescription>
+                            </DialogHeader>
+                            <Tabs defaultValue="assignments">
+                              <TabsList>
+                                <TabsTrigger value="assignments">Assignments</TabsTrigger>
+                                <TabsTrigger value="resources">Resources</TabsTrigger>
+                              </TabsList>
+                              <TabsContent value="assignments">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead>Title</TableHead>
+                                      <TableHead>Due Date</TableHead>
+                                      <TableHead>Status</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {selectedMaterial.assignments.map((assignment) => (
+                                      <TableRow key={assignment.id}>
+                                        <TableCell>{assignment.title}</TableCell>
+                                        <TableCell>{assignment.dueDate}</TableCell>
+                                        <TableCell>
+                                          <Badge 
+                                            variant={
+                                              assignment.status === "Submitted" ? "success" :
+                                              assignment.status === "In Progress" ? "warning" : "secondary"
+                                            }
+                                          >
+                                            {assignment.status}
+                                          </Badge>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </TabsContent>
+                              <TabsContent value="resources">
+                                <ul className="space-y-2">
+                                  {selectedMaterial.resources.map((resource) => (
+                                    <li key={resource.id} className="flex items-center space-x-2">
+                                      <FileText className="h-4 w-4" />
+                                      <span>{resource.title}</span>
+                                      <Badge variant="outline">{resource.type}</Badge>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </TabsContent>
+                            </Tabs>
+                          </>
+                        )}
                       </DialogContent>
                     </Dialog>
                   </li>
