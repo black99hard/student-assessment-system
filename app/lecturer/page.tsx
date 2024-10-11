@@ -13,18 +13,15 @@ import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { BookOpen, Calendar as CalendarIcon, FileText, Users, PlusCircle, Clock, Bell, UserPlus, BarChart2, Settings } from 'lucide-react'
-import { LineChart } from "recharts"
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line } from "recharts"
+import { BookOpen, Calendar as CalendarIcon, FileText, Users, PlusCircle, Clock, Bell, UserPlus, BarChart2, Settings, TrendingUp } from 'lucide-react'
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, LineChart } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { toast } from "@/hooks/use-toast"
-import withAuth from '@/lib/withAuth'
-import { TrendingUp } from 'lucide-react'
 
 interface Semester {
   name: string;
-  cgp: number; // Add other properties as needed
-  courses: Course[]; // Assuming Course is another defined interface
+  cgp: number;
+  courses: Course[];
 }
 
 interface Course {
@@ -33,20 +30,54 @@ interface Course {
   grade: string;
 }
 
+interface StudentDetails {
+  name: string;
+  currentSemester: string;
+  semesters: Semester[];
+  cgp: number;
+  attendance: number;
+  performanceData: { course: string; score: number }[];
+}
 
-export default  function LecturerDashboard() {
+interface StudentInfo {
+  id: string;
+  name: string;
+  cgp: number;
+  classification: string;
+}
+
+interface UpcomingClass {
+  id: number;
+  title: string;
+  time: string;
+  room: string;
+}
+
+interface CourseTaught {
+  id: string;
+  name: string;
+  students: number;
+}
+
+interface RecentAssignment {
+  id: number;
+  title: string;
+  course: string;
+  submitted: number;
+  total: number;
+}
+
+export default function LecturerDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [selectedCourses, setSelectedCourses] = useState(['CS301', 'CS205'])
-  const [selectedStudent, setSelectedStudent] = useState<any>(null)
+  const [selectedStudent, setSelectedStudent] = useState<StudentDetails | null>(null)
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null)
 
-  // Mock data
   const lecturer = {
     name: "Dr. Emily Parker",
     id: "LEC001",
     department: "Computer Science"
   }
-
   const upcomingClasses = [
     { id: 1, title: "Database Systems", time: "10:00 AM - 11:30 AM", room: "CS-101" },
     { id: 2, title: "Web Development", time: "2:00 PM - 3:30 PM", room: "CS-201" },
@@ -936,9 +967,6 @@ export default  function LecturerDashboard() {
   };
   
 
-  
-  // Add similar detailed data for STU003 to STU015
-
 
   const generateStudentData = (numStudents: number) => {
     const courses = ['CS301', 'CS205', 'CS401']
@@ -953,7 +981,7 @@ export default  function LecturerDashboard() {
   const studentData = generateStudentData(100)
 
   const prepareChartData = () => {
-    return studentData.map((student, index) => ({
+    return studentData.map((student) => ({
       name: student.id,
       [selectedCourses[0]]: student[selectedCourses[0] as keyof typeof student],
       [selectedCourses[1]]: student[selectedCourses[1] as keyof typeof student],
@@ -966,26 +994,17 @@ export default  function LecturerDashboard() {
     setChartData(prepareChartData())
   }, [selectedCourses])
 
-  const courseNames = {
+  const courseNames: { [key: string]: string } = {
     CS301: "Database Systems",
     CS205: "Web Development",
     CS401: "Algorithms"
   }
-
-  // const getRemark = (attendance: number, total: number, grade: string) => {
-  //   if (attendance < 75) return "Boost attendance level"
-  //   if (total < 60) return "Consider reducing credit units next semester"
-  //   if (grade === "A" || grade === "B") return "Keep it up"
-  //   return "Average performance, can improve"
-  // }
-
 
   const getPerformanceColor = (cgp: number) => {
     if (cgp >= 3.5) return "bg-green-100 text-green-800"
     if (cgp >= 2.5) return "bg-yellow-100 text-yellow-800"
     return "bg-red-100 text-red-800"
   }
-
 
   const getRemark = (attendance: number, cgp: number) => {
     if (attendance < 75) return "Boost attendance level"
@@ -995,7 +1014,7 @@ export default  function LecturerDashboard() {
   }
 
   const openStudentModal = (studentId: string) => {
-    const student = studentDetails[studentId as keyof typeof studentDetails];
+    const student = studentDetails[studentId];
     if (student && student.semesters && student.semesters.length > 0) {
       setSelectedStudent(student);
       setSelectedSemester(student.semesters[0].name);
@@ -1004,6 +1023,7 @@ export default  function LecturerDashboard() {
       setSelectedSemester(null);
     }
   }
+
   const notifyStudent = (studentId: string, message: string) => {
     toast({
       title: "Notification Sent",
@@ -1091,144 +1111,143 @@ export default  function LecturerDashboard() {
           <CardDescription>Detailed view of student data and metrics</CardDescription>
         </CardHeader>
         <CardContent>
-        <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Student ID</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>CGP</TableHead>
-            <TableHead>Classification</TableHead>
-            <TableHead>Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {studentInfo.map((student) => (
-            <TableRow key={student.id}>
-              <TableCell>{student.id}</TableCell>
-              <TableCell>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="link" onClick={() => openStudentModal(student.id)}>
-                      {student.name}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                      <DialogTitle>{selectedStudent?.name}</DialogTitle>
-                      <DialogDescription>Student Details and Performance</DialogDescription>
-                    </DialogHeader>
-                    {selectedStudent && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <h3 className="text-lg font-semibold mb-2">Current Semester</h3>
-                          <p>{selectedStudent.currentSemester}</p>
-                          <h3 className="text-lg font-semibold mt-4 mb-2">Overall CGP</h3>
-                          <Badge className={getPerformanceColor(selectedStudent.cgp)}>
-                            {selectedStudent.cgp.toFixed(2)}
-                          </Badge>
-                          <h3 className="text-lg font-semibold mt-4 mb-2">Attendance</h3>
-                          <Badge className={selectedStudent.attendance < 75 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>
-                            {selectedStudent.attendance}%
-                          </Badge>
-                          <h3 className="text-lg font-semibold mt-4 mb-2">Remark</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {getRemark(selectedStudent.attendance, selectedStudent.cgp)}
-                          </p>
-                          {(selectedStudent.cgp < 2.5 || selectedStudent.attendance < 75) && (
-                            <Button
-                              className="mt-2"
-                              onClick={() => notifyStudent(selectedStudent.id, "Your performance needs improvement. Please see your advisor.")}
-                            >
-                              <TrendingUp className="w-4 h-4 mr-2" />
-                              Notify for Improvement
-                            </Button>
-                          )}
-                          <h3 className="text-lg font-semibold mt-4 mb-2">Performance Graph</h3>
-                          <ChartContainer
-                            config={{
-                              score: {
-                                label: "Score",
-                                color: "hsl(var(--chart-1))",
-                              },
-                            }}
-                            className="h-[200px]"
-                          >
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart data={selectedStudent.performanceData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="course" />
-                                <YAxis />
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="score" fill="var(--color-score)" />
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </ChartContainer>
-                        </div>
-                        <div>
-                        <h3 className="text-lg font-semibold mb-2">Semester Courses</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Student ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>CGP</TableHead>
+                <TableHead>Classification</TableHead>
+                <TableHead>Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {studentInfo.map((student) => (
+                <TableRow key={student.id}>
+                  <TableCell>{student.id}</TableCell>
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="link" onClick={() => openStudentModal(student.id)}>
+                          {student.name}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl">
+                        <DialogHeader>
+                          <DialogTitle>{selectedStudent?.name}</DialogTitle>
+                          <DialogDescription>Student Details and Performance</DialogDescription>
+                        </DialogHeader>
+                        {selectedStudent && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <h3 className="text-lg font-semibold mb-2">Current Semester</h3>
+                              <p>{selectedStudent.currentSemester}</p>
+                              <h3 className="text-lg font-semibold mt-4 mb-2">Overall CGP</h3>
+                              <Badge className={getPerformanceColor(selectedStudent.cgp)}>
+                                {selectedStudent.cgp.toFixed(2)}
+                              </Badge>
+                              <h3 className="text-lg font-semibold mt-4 mb-2">Attendance</h3>
+                              <Badge className={selectedStudent.attendance < 75 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>
+                                {selectedStudent.attendance}%
+                              </Badge>
+                              <h3 className="text-lg font-semibold mt-4 mb-2">Remark</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {getRemark(selectedStudent.attendance, selectedStudent.cgp)}
+                              </p>
+                              {(selectedStudent.cgp < 2.5 || selectedStudent.attendance < 75) && (
+                                <Button
+                                  className="mt-2"
+                                  onClick={() => notifyStudent(student.id, "Your performance needs improvement. Please see your advisor.")}
+                                >
+                                  <TrendingUp className="w-4 h-4 mr-2" />
+                                  Notify for Improvement
+                                </Button>
+                              )}
+                              <h3 className="text-lg font-semibold mt-4 mb-2">Performance Graph</h3>
+                              <ChartContainer
+                                config={{
+                                  score: {
+                                    label: "Score",
+                                    color: "hsl(var(--chart-1))",
+                                  },
+                                }}
+                                className="h-[200px]"
+                              >
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <BarChart  data={selectedStudent.performanceData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="course" />
+                                    <YAxis />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Bar dataKey="score" fill="var(--color-score)" />
+                                  </BarChart>
+                                </ResponsiveContainer>
+                              </ChartContainer>
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold mb-2">Semester Courses</h3>
                               <div className="flex flex-wrap gap-2 mb-4">
-                                  {selectedStudent.semesters.map((semester: Semester, index: number) => (
-                                      <Button
-                                          key={index}
-                                          variant={selectedSemester === semester.name ? "default" : "outline"}
-                                          onClick={() => setSelectedSemester(semester.name)}
-                                      >
-                                          {semester.name.split(',')[0]}
-                                      </Button>
-                                  ))}
+                                {selectedStudent.semesters.map((semester, index) => (
+                                  <Button
+                                    key={index}
+                                    variant={selectedSemester === semester.name ? "default" : "outline"}
+                                    onClick={() => setSelectedSemester(semester.name)}
+                                  >
+                                    {semester.name.split(',')[0]}
+                                  </Button>
+                                ))}
                               </div>
-
-                          {selectedSemester && (
-                             <div>
-                             <h4 className="font-semibold mb-2">{selectedSemester}</h4>
-                             <p className="mb-2">
-                                 CGP: {selectedStudent.semesters.find((s: Semester) => s.name === selectedSemester)?.cgp.toFixed(2)}
-                             </p>
-                             <Table>
-                                 <TableHeader>
-                                     <TableRow>
-                                         <TableCell>Course Code</TableCell>
-                                         <TableCell>Course Name</TableCell>
-                                         <TableCell>Grade</TableCell>
-                                     </TableRow>
-                                 </TableHeader>
-                                 <tbody>
-                                     {selectedStudent.semesters.find(s => s.name === selectedSemester)?.courses.map((course, index) => (
-                                         <TableRow key={index}>
-                                             <TableCell>{course.code}</TableCell>
-                                             <TableCell>{course.name}</TableCell>
-                                             <TableCell>{course.grade}</TableCell>
-                                         </TableRow>
-                                     ))}
-                                 </tbody>
-                             </Table>
-                         </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </DialogContent>
-                </Dialog>
-              </TableCell>
-              <TableCell>
-                <Badge className={getPerformanceColor(student.cgp)}>
-                  {student.cgp.toFixed(2)}
-                </Badge>
-              </TableCell>
-              <TableCell>{student.classification}</TableCell>
-              <TableCell>
-                <Button
-                  size="sm"
-                  onClick={() => notifyStudent(student.id, "General notification from your lecturer.")}
-                >
-                  <Bell className="w-4 h-4 mr-2" />
-                  Notify
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                              {selectedSemester && (
+                                <div>
+                                  <h4 className="font-semibold mb-2">{selectedSemester}</h4>
+                                  <p className="mb-2">
+                                    CGP: {selectedStudent.semesters.find((s) => s.name === selectedSemester)?.cgp.toFixed(2)}
+                                  </p>
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableCell>Course Code</TableCell>
+                                        <TableCell>Course Name</TableCell>
+                                        <TableCell>Grade</TableCell>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {selectedStudent.semesters.find(s => s.name === selectedSemester)?.courses.map((course, index) => (
+                                        <TableRow key={index}>
+                                          <TableCell>{course.code}</TableCell>
+                                          <TableCell>{course.name}</TableCell>
+                                          <TableCell>{course.grade}</TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getPerformanceColor(student.cgp)}>
+                      {student.cgp.toFixed(2)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{student.classification}</TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      onClick={() => notifyStudent(student.id, "General notification from your lecturer.")}
+                    >
+                      <Bell className="w-4 h-4 mr-2" />
+                      Notify
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 
@@ -1263,11 +1282,11 @@ export default  function LecturerDashboard() {
           <ChartContainer
             config={{
               [selectedCourses[0]]: {
-                label: courseNames[selectedCourses[0] as keyof typeof courseNames],
+                label: courseNames[selectedCourses[0]],
                 color: "hsl(var(--chart-1))",
               },
               [selectedCourses[1]]: {
-                label: courseNames[selectedCourses[1] as keyof typeof courseNames],
+                label: courseNames[selectedCourses[1]],
                 color: "hsl(var(--chart-2))",
               },
             }}
@@ -1408,7 +1427,7 @@ export default  function LecturerDashboard() {
                       <TableRow key={student.id}>
                         <TableCell>{student.id}</TableCell>
                         <TableCell>{student.name}</TableCell>
-                        <TableCell>{courseDetails[index % courseDetails.length].courseCode}</TableCell>
+                        <TableCell>{coursesTaught[index % coursesTaught.length].id}</TableCell>
                         <TableCell>Assignment {index + 1}</TableCell>
                         <TableCell>{new Date().toLocaleDateString()}</TableCell>
                         <TableCell>
@@ -1455,4 +1474,3 @@ export default  function LecturerDashboard() {
     </div>
   )
 }
-
