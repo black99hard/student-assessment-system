@@ -22,8 +22,15 @@ import withAuth from '@/lib/withAuth'
 import { TrendingUp } from 'lucide-react'
 
 interface Semester {
-  name: string; // Example property
-  // Add other properties as needed
+  name: string;
+  cgp: number; // Add other properties as needed
+  courses: Course[]; // Assuming Course is another defined interface
+}
+
+interface Course {
+  code: string;
+  name: string;
+  grade: string;
 }
 
 
@@ -1172,29 +1179,30 @@ export default  function LecturerDashboard() {
                               </div>
 
                           {selectedSemester && (
-                            <div>
-                              <h4 className="font-semibold mb-2">{selectedSemester}</h4>
-                              <p className="mb-2">CGP: {selectedStudent.semesters.find(s => s.name === selectedSemester)?.cgp.toFixed(2)}</p>
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead>Course Code</TableHead>
-                                    <TableHead>Course Name</TableHead>
-                                    <TableHead>Grade</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {selectedStudent.semesters.find(s => s.name === selectedSemester)?.courses.map((course, index) => (
-                                    <TableRow key={index}>
-                                      <TableCell>{course.code}</TableCell>
-                                      <TableCell>{course.name}</TableCell>
-                                      <TableCell>{course.grade}</TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              
-                              </Table>
-                            </div>
+                             <div>
+                             <h4 className="font-semibold mb-2">{selectedSemester}</h4>
+                             <p className="mb-2">
+                                 CGP: {selectedStudent.semesters.find((s: Semester) => s.name === selectedSemester)?.cgp.toFixed(2)}
+                             </p>
+                             <Table>
+                                 <TableHeader>
+                                     <TableRow>
+                                         <TableCell>Course Code</TableCell>
+                                         <TableCell>Course Name</TableCell>
+                                         <TableCell>Grade</TableCell>
+                                     </TableRow>
+                                 </TableHeader>
+                                 <tbody>
+                                     {selectedStudent.semesters.find(s => s.name === selectedSemester)?.courses.map((course, index) => (
+                                         <TableRow key={index}>
+                                             <TableCell>{course.code}</TableCell>
+                                             <TableCell>{course.name}</TableCell>
+                                             <TableCell>{course.grade}</TableCell>
+                                         </TableRow>
+                                     ))}
+                                 </tbody>
+                             </Table>
+                         </div>
                           )}
                         </div>
                       </div>
