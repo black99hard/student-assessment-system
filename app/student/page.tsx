@@ -10,8 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Calendar as  FileText,  AlertTriangle,  } from 'lucide-react';
-import {  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { Calendar as CalendarIcon, FileText, AlertTriangle } from 'lucide-react';
+import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 interface CourseMaterial {
   id: number;
@@ -33,10 +33,10 @@ interface CourseMaterial {
     type: string;
   }[];
 }
- 
+
 export default function EnhancedStudentDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [selectedMaterial, setSelectedMaterial] = useState(null);
+  const [selectedMaterial, setSelectedMaterial] = useState<CourseMaterial | null>(null);
 
   // Mock data (you would typically fetch this from an API)
   const student = {
@@ -262,7 +262,6 @@ export default function EnhancedStudentDashboard() {
                     </div>
                     <Badge variant="secondary">{assessment.date}</Badge>
                   </li>
-                
                 ))}
               </ul>
             </ScrollArea>
@@ -374,7 +373,8 @@ export default function EnhancedStudentDashboard() {
       </Card>
 
       <div className="grid gap-6 mt-6 md:grid-cols-2">
-      <Card>
+        <Card>
+          
           <CardHeader>
             <CardTitle>Course Materials</CardTitle>
             <CardDescription>Access your current semester materials</CardDescription>
@@ -516,4 +516,3 @@ export default function EnhancedStudentDashboard() {
     </div>
   );
 }
-
