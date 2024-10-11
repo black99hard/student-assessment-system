@@ -427,8 +427,8 @@ export default function EnhancedStudentDashboard() {
                                         <TableCell>
                                           <Badge 
                                             variant={
-                                              assignment.status === "Submitted" ? "success" :
-                                              assignment.status === "In Progress" ? "warning" : "secondary"
+                                              assignment.status === "Submitted" ? "default" :
+                                              assignment.status === "In Progress" ? "secondary" : "outline"
                                             }
                                           >
                                             {assignment.status}
@@ -492,13 +492,13 @@ export default function EnhancedStudentDashboard() {
           <ul className="space-y-2">
             <li className="flex items-center justify-between">
               <span>Required Credits</span>
-              <Badge variant={student.totalCredits >= student.creditsRequired ? "success" : "secondary"}>
+              <Badge variant={student.totalCredits >= student.creditsRequired ? "default" : "secondary"}>
                 {student.totalCredits}/{student.creditsRequired}
               </Badge>
             </li>
             <li className="flex items-center justify-between">
               <span>Minimum CGPA</span>
-              <Badge variant={student.cgpa >= 2.0 ? "success" : "secondary"}>
+              <Badge variant={student.cgpa >= 2.0 ? "default" : "secondary"}>
                 {student.cgpa >= 2.0 ? "Achieved" : "Not Met"} (Current: {student.cgpa})
               </Badge>
             </li>
@@ -508,7 +508,7 @@ export default function EnhancedStudentDashboard() {
             </li>
             <li className="flex items-center justify-between">
               <span>Internship Requirement</span>
-              <Badge variant="success">Completed</Badge>
+              <Badge variant="default">Completed</Badge>
             </li>
           </ul>
         </CardContent>
