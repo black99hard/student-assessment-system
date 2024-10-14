@@ -74,7 +74,7 @@ export default function LecturerDashboard() {
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null)
 
   const lecturer = {
-    name: "Dr. Emily Parker",
+    name: "Dr. Salahudeen Ridwan",
     id: "LEC001",
     department: "Computer Science"
   }
